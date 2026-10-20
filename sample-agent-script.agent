@@ -1,5 +1,6 @@
 # Sample Agent Script skeleton for Contract Analysis Agent
 # Place this inside an AiAuthoringBundle after generating with `sf agent generate agent-spec`
+# Then refine in Agentforce Builder or via Agentforce DX
 
 agent:
   name: ContractAnalysisAgent
@@ -9,12 +10,36 @@ agent:
 topics:
   - name: ContractIntake
     description: Load and structure a new contract
+    instructions: |
+      Prefer Document AI or Contracts AI extraction.
+      Identify parties, dates, governing law, and major clause categories.
+      Call createReview to start a Contract_Review__c record.
+      Summarize structure and ask if the user wants detailed analysis.
+      Ground all statements in document content.
   - name: ClauseExtraction
     description: Extract and classify key clauses
+    instructions: |
+      Use Classify_Contract_Clause prompt for classification.
+      Prefer exact spans. Detect missing standard clauses when possible.
+      Return structured findings suitable for Contract_Finding__c.
   - name: RiskAnalysis
     description: Score risk and compare to playbook
+    instructions: |
+      Use Generate_Clause_Risk_Rationale prompt and scoreClauseRisk / runAnalysis actions.
+      Perform cross-clause reasoning where relevant.
+      Flag High-risk items for mandatory review and suggest fallback language.
+  - name: CitationGrounding
+    description: Resolve and validate citations
+    instructions: |
+      Retrieve supporting context via Intelligent Context.
+      Validate whether the authority supports the claim. Flag uncertainty for lawyer review.
   - name: FindingsReview
     description: Present findings and capture lawyer feedback
+    instructions: |
+      Summarize overall risk and key findings.
+      Direct user to the LWC for Accept/Override.
+      Call captureOverride when feedback is provided.
+      Offer Complete_Contract_Review Flow when ready.
 
 actions:
   - name: runAnalysis
@@ -25,3 +50,9 @@ actions:
     target: Apex:ContractAnalysisActions.createReview
   - name: captureOverride
     target: Apex:ContractAnalysisActions.captureOverride
+  - name: classifyClause
+    target: PromptTemplate:Classify_Contract_Clause
+  - name: riskRationale
+    target: PromptTemplate:Generate_Clause_Risk_Rationale
+  - name: completeReview
+    target: Flow:Complete_Contract_Review
