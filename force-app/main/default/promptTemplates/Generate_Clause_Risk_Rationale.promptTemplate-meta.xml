@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <description>Generates a short risk rationale and recommended action for a contract clause.</description>
+    <label>Generate Clause Risk Rationale</label>
+    <masterLabel>Generate Clause Risk Rationale</masterLabel>
+    <promptTemplateType>Flex</promptTemplateType>
+    <templateVersions>
+        <templateVersion>
+            <apiVersion>64.0</apiVersion>
+            <status>Active</status>
+            <templateBody>You are a commercial contracts attorney assistant.
+
+Clause type: {!$Input:ClauseType}
+Clause text: {!$Input:ClauseText}
+Playbook position (if any): {!$Input:PlaybookPosition}
+
+Provide:
+1. Risk level (Low / Medium / High)
+2. One-sentence rationale
+3. Recommended action or fallback language (if deviation)
+
+Keep the response concise and grounded only in the provided text.</templateBody>
+        </templateVersion>
+    </templateVersions>
+</PromptTemplate>
