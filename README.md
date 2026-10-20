@@ -2,7 +2,26 @@
 
 This Salesforce DX project provides the foundation for a production-ready, lawyer-in-the-loop **Contract Analysis AI system** built on Salesforce Agentforce, Document AI / Contracts AI, Intelligent Context, and Knowledge Harmonization.
 
-## Architecture Overview
+## System Architecture Overview
+
+1. **Ingestion and structuring** — Accept PDFs, DOCX, or text. Use layout-aware parsers (or OCR + layout models for scans) to recover sections, definitions, schedules, and cross-references. Segment into clause-level chunks while preserving hierarchy and section paths. Normalize citations, defined terms, and boilerplate.
+
+2. **Indexing** — Hybrid index: dense embeddings (legal-domain preferred) + sparse/BM25 for exact matches (citation strings, party names, numbers). Store metadata (contract type, jurisdiction, date, parties, risk tags). Separate indexes or namespaces for (a) the contract under review, (b) internal playbooks/preferred language/historical precedents, and (c) external authorities (statutes, cases, regulations).
+
+3. **Analysis layer** — Multi-step pipeline:
+   - Clause detection and classification (extractive span finding or classification against your taxonomy).
+   - Comparison to playbook positions (deviation detection, missing clauses, risk scoring).
+   - Cross-clause reasoning (e.g., how an indemnification clause interacts with a liability cap or limitation of remedies).
+   - Citation resolution and grounding.
+   - Optional redline or fallback-language suggestions.
+
+4. **Generation and interface** — Structured outputs (JSON + highlights) with mandatory citations/spans. Lawyer UI for review, override, and feedback. Full audit log of retrievals, model calls, and human actions. Confidence/abstention thresholds so low-confidence findings escalate.
+
+5. **Feedback loop** — Reviewed corrections become labeled data for continued improvement (fine-tuning or retrieval tuning).
+
+The system is assistive. Lawyers retain accountability; the model does not replace legal judgment.
+
+## Architecture Overview (Salesforce Implementation)
 
 The system is designed as a modular, human-in-the-loop pipeline optimized for legal precision, grounded citations, and continuous improvement.
 
