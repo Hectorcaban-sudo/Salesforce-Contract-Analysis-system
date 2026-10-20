@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>Contract_Review__c</members>
+        <members>Contract_Finding__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>ContractAnalysisActions</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>Complete_Contract_Review</members>
+        <name>Flow</name>
+    </types>
+    <types>
+        <members>Classify_Contract_Clause</members>
+        <members>Generate_Clause_Risk_Rationale</members>
+        <name>PromptTemplate</name>
+    </types>
+    <types>
+        <members>contractFindingsPanel</members>
+        <name>LightningComponentBundle</name>
+    </types>
+    <version>64.0</version>
+</Package>
