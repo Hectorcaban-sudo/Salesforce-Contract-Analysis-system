@@ -1,0 +1,35 @@
+{
+  "reviewName": "Sample NDA Review - 2026-10-20",
+  "overallRiskScore": 72,
+  "status": "Ready for Review",
+  "findings": [
+    {
+      "clauseType": "Liability Limitation",
+      "riskLevel": "High",
+      "excerpt": "IN NO EVENT SHALL EITHER PARTY’S AGGREGATE LIABILITY ... EXCEED THE AMOUNTS PAID BY CUSTOMER TO VENDOR IN THE THREE (3) MONTHS PRECEDING THE CLAIM.",
+      "rationale": "Cap of only 3 months of fees is below the preferred 12-month standard. High risk of insufficient recovery.",
+      "reviewStatus": "Pending"
+    },
+    {
+      "clauseType": "Indemnification",
+      "riskLevel": "High",
+      "excerpt": "Vendor shall indemnify ... without limitation.",
+      "rationale": "Unlimited indemnification for confidentiality and IP claims. Deviates from preferred mutual + capped position.",
+      "reviewStatus": "Pending"
+    },
+    {
+      "clauseType": "Confidentiality",
+      "riskLevel": "Medium",
+      "excerpt": "This obligation shall survive for a period of two (2) years after termination.",
+      "rationale": "2-year survival is acceptable but below preferred 3–5 years.",
+      "reviewStatus": "Pending"
+    },
+    {
+      "clauseType": "Termination",
+      "riskLevel": "Medium",
+      "excerpt": "There is no right of termination for convenience.",
+      "rationale": "Missing termination for convenience. Acceptable only for short-term or highly customized agreements.",
+      "reviewStatus": "Pending"
+    }
+  ]
+}
