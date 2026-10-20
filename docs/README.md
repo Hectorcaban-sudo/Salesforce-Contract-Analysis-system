@@ -4,15 +4,12 @@ This folder contains documentation for the system architecture and human interac
 
 ## Diagrams
 
-- `ARCHITECTURE_AND_WORKFLOWS.md` — Textual descriptions of the three diagrams
-- JPG and PDF versions of the diagrams have been generated and are available for download from the conversation.
+The following diagrams were generated:
 
-The three diagrams illustrate:
+1. **System Architecture** (`system-architecture.jpg` / `.pdf`)
+2. **Human Interactions Workflow** (`human-interactions-workflow.jpg` / `.pdf`)
+3. **Lawyer Review Workflow** (`lawyer-review-workflow.jpg` / `.pdf`)
 
-1. **System Architecture** — Full pipeline (ingestion → hybrid indexing → retrieval → analysis → human review) with feedback loop and audit logging.
-2. **Human Interactions Workflow** — Swim lanes for Lawyer/User, Admin/Legal Ops, and OEM/Platform Team.
-3. **Lawyer Review Workflow** — End-to-end steps including chat with Agentforce, Document AI, risk scoring, LWC Accept/Override with notes, and completion.
+Due to binary file size limits in the automated push interface, the full image assets are available as a downloadable archive from the conversation. You can extract and commit them into this folder for inline rendering.
 
-These complement the architecture overview in the main README and the deployment guide.
-
-**Note:** Full binary JPG and PDF files can be downloaded from the conversation and committed into this folder for inline rendering on GitHub.
+See `ARCHITECTURE_AND_WORKFLOWS.md` for descriptions.
