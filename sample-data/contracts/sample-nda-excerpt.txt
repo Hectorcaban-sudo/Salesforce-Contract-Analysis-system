@@ -1,0 +1,11 @@
+SAMPLE NDA EXCERPT (for testing)
+
+1. Confidentiality. Each party agrees to hold the other party’s Confidential Information in strict confidence and not to disclose it to any third party without prior written consent, except as required by law. This obligation shall survive for a period of two (2) years after termination of this Agreement.
+
+2. Limitation of Liability. IN NO EVENT SHALL EITHER PARTY’S AGGREGATE LIABILITY ARISING OUT OF OR RELATED TO THIS AGREEMENT EXCEED THE AMOUNTS PAID BY CUSTOMER TO VENDOR IN THE THREE (3) MONTHS PRECEDING THE CLAIM. NEITHER PARTY SHALL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES.
+
+3. Indemnification. Vendor shall indemnify, defend, and hold harmless Customer from and against any and all claims, damages, and expenses arising out of Vendor’s breach of its confidentiality obligations or infringement of third-party intellectual property rights, without limitation.
+
+4. Governing Law. This Agreement shall be governed by the laws of the State of Delaware, without regard to conflict of laws principles. Exclusive venue shall be in the courts of Delaware.
+
+5. Termination. Either party may terminate this Agreement for material breach if the breach remains uncured for thirty (30) days after written notice. There is no right of termination for convenience.
