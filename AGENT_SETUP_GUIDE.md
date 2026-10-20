@@ -1,7 +1,7 @@
 # Agentforce Agent Manual Setup Guide
 ## Contract Analysis Agent
 
-This guide walks you through creating the **Contract Analysis Agent** manually in Agentforce Builder (or via Agentforce DX). It includes recommended topics (subagents), instructions, action wiring, prompt usage, and sample questions.
+This guide walks you through creating the **Contract Analysis Agent** manually in Agentforce Builder (or via Agentforce DX). It includes recommended topics (subagents), detailed instructions, action wiring, prompt usage, and expanded sample questions.
 
 ### Prerequisites
 - Project deployed (see main README).
@@ -33,10 +33,12 @@ Create the following topics. For each, add clear routing instructions so the Age
 ```
 You are responsible for the initial intake of a contract.
 - Prefer Document AI or Contracts AI extraction when available.
-- Identify parties, dates, governing law, and major clause categories.
-- Call the createReview Apex action to start a Contract_Review__c record.
-- Summarize what was extracted and ask the user if they want to proceed to detailed analysis.
-Always ground statements in the actual document content.
+- Identify parties, effective date, expiration/renewal, governing law, and major clause categories (Liability, Indemnification, Termination, Confidentiality, IP, etc.).
+- Segment the document into logical sections while preserving hierarchy.
+- Call the createReview Apex action to start a Contract_Review__c record and store the overall risk placeholder.
+- Summarize the high-level structure and extracted metadata.
+- Ask the user whether they want to proceed to clause-level analysis or focus on specific sections.
+Always ground statements in the actual document content. If extraction confidence is low, flag it for human review.
 ```
 
 **Actions**:
@@ -44,15 +46,16 @@ Always ground statements in the actual document content.
 - Apex: `ContractAnalysisActions.createReview`
 
 #### Topic 2: Clause Extraction & Classification
-**Description**: Extract specific clauses and classify them by type.
+**Description**: Extract specific clauses and classify them by type with exact spans.
 
 **Instructions**:
 ```
-Extract and classify key commercial clauses (Liability, Indemnification, Termination, Governing Law, Confidentiality, etc.).
-- Use the Classify_Contract_Clause prompt template for classification.
-- Prefer exact text spans.
-- Return structured results that can be stored as Contract_Finding__c records.
-Be conservative and cite the source text.
+Extract and classify key commercial clauses against the standard taxonomy (Liability Limitation, Indemnification, Termination, Governing Law, Confidentiality, Assignment, Force Majeure, Audit Rights, etc.).
+- Use the Classify_Contract_Clause prompt template for classification and preliminary risk.
+- Prefer exact text spans and preserve section paths or clause numbers.
+- Detect missing standard clauses when the contract type is known.
+- Return structured results suitable for Contract_Finding__c records (clause type, excerpt, risk level).
+Be conservative on classification. Cite the source text for every finding. If a clause is ambiguous, note it rather than force a category.
 ```
 
 **Actions**:
@@ -60,16 +63,18 @@ Be conservative and cite the source text.
 - Apex: `ContractAnalysisActions.scoreClauseRisk` (optional preliminary scoring)
 
 #### Topic 3: Playbook & Risk Analysis
-**Description**: Compare clauses to playbook standards and assign risk scores.
+**Description**: Compare clauses to playbook standards, score risk, and suggest fallbacks.
 
 **Instructions**:
 ```
 Score risk for extracted clauses against the organization's playbook or standard positions.
-- Use the Generate_Clause_Risk_Rationale prompt.
-- Call scoreClauseRisk or runAnalysis Apex actions as needed.
+- Use the Generate_Clause_Risk_Rationale prompt for detailed rationale and recommended language.
+- Call scoreClauseRisk or runAnalysis Apex actions as needed for batch processing.
+- Perform cross-clause reasoning where relevant (e.g., how an indemnification interacts with a liability cap or limitation of remedies).
+- Detect deviations, missing protections, and unfavorable positions.
 - Flag High-risk items clearly for mandatory human review.
-- Suggest fallback language when there is a deviation.
-Ground every risk assessment in the clause text and playbook (if provided).
+- Suggest specific fallback or preferred language when there is a material deviation.
+Ground every risk assessment in the clause text and playbook (if provided). Use confidence/abstention: if evidence is weak, escalate rather than assert.
 ```
 
 **Actions**:
@@ -82,27 +87,29 @@ Ground every risk assessment in the clause text and playbook (if provided).
 
 **Instructions**:
 ```
-When a clause or finding references external authority (statute, case, regulation, or internal policy):
-- Retrieve supporting context via Intelligent Context / Data Cloud search.
-- Validate that the citation supports the claim.
-- If uncertain, flag for lawyer review rather than asserting correctness.
-Always show the retrieved supporting text.
+When a clause, finding, or user question references external authority (statute, case law, regulation, industry standard, or internal policy):
+- Retrieve supporting context via Intelligent Context / Data Cloud search indexes.
+- Validate whether the citation actually supports the claim made in the contract or finding.
+- Show the retrieved supporting text or highlight the relevant passage.
+- If the authority is ambiguous, outdated, or does not clearly support the position, flag it for lawyer review rather than asserting correctness.
+Always prefer grounded retrieval over general knowledge. Note the source of any authority.
 ```
 
 **Actions**:
 - Intelligent Context / Data Cloud retrieval actions (configure as needed)
 
 #### Topic 5: Findings & Review
-**Description**: Present structured findings and capture lawyer feedback.
+**Description**: Present structured findings and capture lawyer feedback for the feedback loop.
 
 **Instructions**:
 ```
-Generate or update the Contract Review and Findings.
-- Summarize overall risk and list key findings.
-- Direct the user to the Contract Findings Panel LWC for Accept / Override.
-- When the user provides feedback, call the captureOverride Apex action.
-- Always offer the option to mark the review complete via the Complete_Contract_Review Flow.
-Present findings clearly with risk levels and excerpts.
+Generate or update the Contract Review and Findings for lawyer review.
+- Summarize overall risk score and list key findings with clause type, risk level, and excerpt.
+- Direct the user to the Contract Findings Panel LWC on the Contract_Review__c record for Accept / Override actions.
+- When the user provides feedback (accept, override, or a note), call the captureOverride Apex action and store the note.
+- Offer the option to mark the review complete via the Complete_Contract_Review Flow once the lawyer is satisfied.
+- Maintain an audit-friendly tone: every material statement should be traceable to a span or retrieval.
+Present findings clearly. Escalate low-confidence or High-risk items explicitly.
 ```
 
 **Actions**:
@@ -122,9 +129,15 @@ Use these to test routing and behavior:
 | "What's the liability cap in this agreement and is it high risk?" | Playbook & Risk Analysis |
 | "Classify the termination clause and suggest fallback language" | Clause Extraction + Risk Analysis |
 | "Does the governing law clause match our playbook?" | Playbook & Risk Analysis |
+| "How does the indemnification interact with the liability limitation?" | Playbook & Risk Analysis |
 | "Show me the findings and let me override the high-risk items" | Findings & Review |
 | "Mark this review as complete" | Findings & Review |
 | "Validate the citation to Section 12 of the UCC" | Citation & Authority Grounding |
+| "Are there any missing standard clauses for a SaaS agreement?" | Clause Extraction |
+| "Extract the confidentiality obligations and score their risk" | Clause Extraction + Risk Analysis |
+| "What parties are involved and what is the governing law?" | Contract Intake |
+| "Flag any unlimited liability or uncapped indemnity language" | Playbook & Risk Analysis |
+| "Accept the termination finding and override the liability one with a note that we negotiated a $1M cap" | Findings & Review |
 
 ---
 
@@ -177,7 +190,7 @@ sf agent generate agent-spec --name ContractAnalysisAgent --type Employee \
   --company-description "Legal team contract review system"
 ```
 
-Then edit the generated `.agent` file using the topic instructions and action mappings from this guide, and publish:
+Then edit the generated `.agent` file using the topic instructions and action mappings from this guide (see also `sample-agent-spec.yaml`), and publish:
 
 ```bash
 sf agent publish authoring-bundle --api-name ContractAnalysisAgent
