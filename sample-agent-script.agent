@@ -1,0 +1,27 @@
+# Sample Agent Script skeleton for Contract Analysis Agent
+# Place this inside an AiAuthoringBundle after generating with `sf agent generate agent-spec`
+
+agent:
+  name: ContractAnalysisAgent
+  role: Analyze commercial contracts for material clauses, risk, and playbook compliance
+  description: Assists legal team with contract review using Document AI, Intelligent Context, and custom actions
+
+topics:
+  - name: ContractIntake
+    description: Load and structure a new contract
+  - name: ClauseExtraction
+    description: Extract and classify key clauses
+  - name: RiskAnalysis
+    description: Score risk and compare to playbook
+  - name: FindingsReview
+    description: Present findings and capture lawyer feedback
+
+actions:
+  - name: runAnalysis
+    target: Apex:ContractAnalysisActions.runAnalysis
+  - name: scoreClauseRisk
+    target: Apex:ContractAnalysisActions.scoreClauseRisk
+  - name: createReview
+    target: Apex:ContractAnalysisActions.createReview
+  - name: captureOverride
+    target: Apex:ContractAnalysisActions.captureOverride
