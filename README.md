@@ -82,6 +82,7 @@ The system is designed as a modular, human-in-the-loop pipeline optimized for le
 - Sample agent spec: `sample-agent-spec.yaml`
 - Detailed manual setup guide: `AGENT_SETUP_GUIDE.md`
 - Deployment guide (technical, admin, operations, lawyer/stakeholder): `DEPLOYMENT_GUIDE.md`
+- Sample data & artifacts: `sample-data/` (playbooks, clause taxonomy, sample NDA excerpt, example findings)
 
 ## Prerequisites
 
@@ -107,12 +108,14 @@ The system is designed as a modular, human-in-the-loop pipeline optimized for le
    - Enable Agentforce, Data Cloud, Einstein.
    - Configure Document AI / Contracts AI schemas.
    - Set up Intelligent Context indexes and Knowledge Harmonization.
+   - Ingest sample playbooks from `sample-data/playbooks/`.
    - Add the LWC to Contract Review record pages.
 
 ## Next Steps
 
 - See **DEPLOYMENT_GUIDE.md** for the full technical, admin, operations, and stakeholder checklist.
 - See **AGENT_SETUP_GUIDE.md** for step-by-step instructions to create the Agentforce agent manually (topics, instructions, prompts, sample questions, and action wiring).
+- See **sample-data/README.md** for playbooks, taxonomy, and test contracts.
 
 For Agentforce DX generation:
 ```bash
