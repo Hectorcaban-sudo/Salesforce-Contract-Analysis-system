@@ -79,7 +79,9 @@ The system is designed as a modular, human-in-the-loop pipeline optimized for le
 - Flow: `Complete_Contract_Review`
 - LWC: `contractFindingsPanel` (Accept / Override + free-text note)
 - Sample agent script: `sample-agent-script.agent`
+- Sample agent spec: `sample-agent-spec.yaml`
 - Detailed manual setup guide: `AGENT_SETUP_GUIDE.md`
+- Deployment guide (technical, admin, operations, lawyer/stakeholder): `DEPLOYMENT_GUIDE.md`
 
 ## Prerequisites
 
@@ -109,7 +111,8 @@ The system is designed as a modular, human-in-the-loop pipeline optimized for le
 
 ## Next Steps
 
-See **AGENT_SETUP_GUIDE.md** for step-by-step instructions to create the Agentforce agent manually (topics, instructions, prompts, sample questions, and action wiring).
+- See **DEPLOYMENT_GUIDE.md** for the full technical, admin, operations, and stakeholder checklist.
+- See **AGENT_SETUP_GUIDE.md** for step-by-step instructions to create the Agentforce agent manually (topics, instructions, prompts, sample questions, and action wiring).
 
 For Agentforce DX generation:
 ```bash
