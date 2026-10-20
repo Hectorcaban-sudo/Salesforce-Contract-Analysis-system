@@ -1,0 +1,32 @@
+# Sample Agent Spec for Contract Analysis Agent
+# Generate with: sf agent generate agent-spec --name ContractAnalysisAgent ...
+# Then refine this file and use: sf agent create --spec-file sample-agent-spec.yaml
+
+agentType: Employee
+companyName: Your Legal Team
+companyDescription: Internal legal operations supporting commercial contract review with AI assistance.
+role: Analyze commercial contracts for material clauses, risk scoring, playbook compliance, and grounded citations. Present findings for lawyer review and capture feedback.
+description: Assists the legal team by extracting clauses, scoring risk against playbooks, validating citations, and generating structured findings with a human-in-the-loop review interface.
+maxNumOfTopics: 5
+tone: professional
+
+topics:
+  - name: ContractIntake
+    description: Load and structure a new contract, extract metadata and candidate clauses, and create a review record.
+  - name: ClauseExtraction
+    description: Extract and classify key clauses with exact spans against a standard taxonomy.
+  - name: RiskAnalysis
+    description: Score risk, compare to playbook positions, perform cross-clause reasoning, and suggest fallback language.
+  - name: CitationGrounding
+    description: Resolve and validate citations or external authorities using retrieval.
+  - name: FindingsReview
+    description: Present structured findings and capture lawyer Accept/Override feedback.
+
+# After generation, map these actions in the authoring bundle / Agent Script:
+# - Apex:ContractAnalysisActions.runAnalysis
+# - Apex:ContractAnalysisActions.scoreClauseRisk
+# - Apex:ContractAnalysisActions.createReview
+# - Apex:ContractAnalysisActions.captureOverride
+# - PromptTemplate:Classify_Contract_Clause
+# - PromptTemplate:Generate_Clause_Risk_Rationale
+# - Flow:Complete_Contract_Review
