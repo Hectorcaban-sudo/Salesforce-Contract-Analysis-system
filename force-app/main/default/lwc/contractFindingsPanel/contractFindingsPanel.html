@@ -1,0 +1,38 @@
+<template>
+    <lightning-card title="Contract Review Findings" icon-name="standard:contract">
+        <div class="slds-p-around_medium">
+            <p><strong>Review:</strong> {reviewName}</p>
+            <p><strong>Overall Risk:</strong> {riskScore}/100</p>
+            <p><strong>Status:</strong> {status}</p>
+        </div>
+        <template if:true={hasFindings}>
+            <template for:each={findings.data.records} for:item="finding">
+                <div key={finding.id} class="slds-box slds-m-around_small">
+                    <p><strong>{finding.fields.Clause_Type__c.value}</strong> — 
+                       <span>{finding.fields.Risk_Level__c.value}</span>
+                       <template if:true={finding.fields.Review_Status__c.value}>
+                           ({finding.fields.Review_Status__c.value})
+                       </template>
+                    </p>
+                    <p class="slds-text-body_small">{finding.fields.Excerpt__c.value}</p>
+                    <template if:true={finding.fields.Override_Note__c.value}>
+                        <p class="slds-text-body_small slds-text-color_weak">Note: {finding.fields.Override_Note__c.value}</p>
+                    </template>
+                    <lightning-textarea 
+                        label="Override Note" 
+                        data-id={finding.id} 
+                        placeholder="Optional note if overriding..."
+                        class="slds-m-top_x-small">
+                    </lightning-textarea>
+                    <div class="slds-m-top_small">
+                        <lightning-button label="Accept" data-id={finding.id} onclick={handleAccept} variant="brand" class="slds-m-right_x-small"></lightning-button>
+                        <lightning-button label="Override" data-id={finding.id} onclick={handleOverride} variant="neutral"></lightning-button>
+                    </div>
+                </div>
+            </template>
+        </template>
+        <template if:false={hasFindings}>
+            <p class="slds-p-around_medium">No findings yet. Run analysis from the agent.</p>
+        </template>
+    </lightning-card>
+</template>
