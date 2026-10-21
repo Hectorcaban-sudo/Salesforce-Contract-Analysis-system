@@ -27,16 +27,19 @@ In **Agentforce Builder** (Setup → Agentforce → Agents):
 Create the following topics. For each, add clear routing instructions so the Agent Router selects the right one.
 
 #### Topic 1: Contract Intake & Structure
-**Description**: Load a new contract document, extract key fields and candidate clauses, and create a review record.
+**Description**: Load a new contract document, extract key fields and candidate clauses, and create a review record. Handles non-standard formats, government agency variations, modifications (mods), and subcontract mods.
 
 **Instructions**:
 ```
 You are responsible for the initial intake of a contract.
 - Prefer Document AI or Contracts AI extraction when available.
+- Determine the document type (base contract, modification/mod, subcontract mod, task order, etc.) and the agency or vehicle if identifiable.
+- Select the most appropriate extraction template or playbook based on document type and agency.
 - Identify parties, effective date, expiration/renewal, governing law, and major clause categories (Liability, Indemnification, Termination, Confidentiality, IP, etc.).
 - Segment the document into logical sections while preserving hierarchy.
 - Call the createReview Apex action to start a Contract_Review__c record and store the overall risk placeholder.
 - Summarize the high-level structure and extracted metadata.
+- If the format is non-standard, agency-specific, or extraction confidence is low, clearly flag the findings for human review and include the exact text spans.
 - Ask the user whether they want to proceed to clause-level analysis or focus on specific sections.
 Always ground statements in the actual document content. If extraction confidence is low, flag it for human review.
 ```
@@ -123,7 +126,7 @@ Present findings clearly. Escalate low-confidence or High-risk items explicitly.
 
 | Sub-agent / Topic | Primary Scope | Classification | Key Output |
 |-------------------|---------------|----------------|------------|
-| **Contract Intake & Structure** | Load & structure document | Orchestration / entry point | `Contract_Review__c` + structured text |
+| **Contract Intake & Structure** | Load & structure document (including non-standard, gov, mods) | Orchestration / entry point | `Contract_Review__c` + structured text |
 | **Clause Extraction & Classification** | Identify & label clauses | Extraction + classification | Classified clause spans with exact excerpts |
 | **Playbook & Risk Analysis** | Compare to standards & score risk | Reasoning / risk assessment | Risk levels, rationales, fallback suggestions |
 | **Citation & Authority Grounding** | Resolve and validate citations | Grounding / retrieval | Citation status and supporting passages |
@@ -131,9 +134,9 @@ Present findings clearly. Escalate low-confidence or High-risk items explicitly.
 
 **Detailed scopes**:
 
-- **Contract Intake & Structure**: Accept a contract (PDF, DOCX, or text), recover sections/definitions/schedules, create the review record, and hand off structured content. Classification: Document processing / orchestration.
+- **Contract Intake & Structure**: Accept a contract (PDF, DOCX, or text), detect document type (base, mod, subcontract mod, etc.) and agency/vehicle, recover sections/definitions/schedules, create the review record, and hand off structured content. Handles variable government formats. Classification: Document processing / orchestration.
 - **Clause Extraction & Classification**: Segment into clause-level spans, classify against the taxonomy (Liability Limitation, Indemnification, Termination, etc.), and preserve section paths. Classification: Extraction + classification.
-- **Playbook & Risk Analysis**: Retrieve preferred positions, detect deviations and missing clauses, assign risk levels, and generate rationales or fallback language. Classification: Reasoning / risk assessment.
+- **Playbook & Risk Analysis**: Retrieve preferred positions (agency- or type-specific when available), detect deviations and missing clauses, assign risk levels, and generate rationales or fallback language. Classification: Reasoning / risk assessment.
 - **Citation & Authority Grounding**: Parse citations, retrieve supporting authorities, and confirm they support the clause. Classification: Grounding / retrieval.
 - **Findings & Review**: Write findings to `Contract_Finding__c`, surface them in the LWC panel, capture Accept/Override + notes, and allow marking complete. Classification: Presentation / human-in-the-loop.
 
@@ -151,6 +154,9 @@ Use these to test routing and behavior. Questions are grouped by expected primar
 - "Load this MSA and create a new review record"
 - "Summarize the structure of this agreement and list the major sections"
 - "Who are the parties and what is the effective date?"
+- "This is a GSA schedule mod — extract the key changes"
+- "Analyze this subcontract modification from a DoD agency"
+- "Is this a base contract or a modification?"
 
 #### Clause Extraction & Classification
 - "Classify the termination clause and suggest fallback language"
@@ -251,5 +257,6 @@ sf agent publish authoring-bundle --api-name ContractAnalysisAgent
 - Always keep a human review gate for High-risk findings.
 - Use Intelligent Context + Knowledge Harmonization for the best citation highlighting experience.
 - The Apex methods are stubs — extend them to call real Document AI, external services, or Data Cloud retrievers as needed.
+- For government and multi-agency work, create multiple Document AI extraction templates (base contracts, mods, subcontract mods, agency-specific) and instruct the agent to select the appropriate one.
 
 This setup gives you a complete, lawyer-in-the-loop Contract Analysis Agent grounded in Salesforce.
