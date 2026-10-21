@@ -11,6 +11,7 @@ public with sharing class CaptureOverrideAction {
         public String note;
     }
 
+    @AuraEnabled
     @InvocableMethod(label='Capture Finding Override' description='Marks a finding as Accepted or Overridden and stores optional note.')
     public static List<String> captureOverride(List<OverrideRequest> requests) {
         List<String> results = new List<String>();
