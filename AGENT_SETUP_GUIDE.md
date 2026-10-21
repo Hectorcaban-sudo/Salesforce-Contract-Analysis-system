@@ -43,7 +43,7 @@ Always ground statements in the actual document content. If extraction confidenc
 
 **Actions**:
 - Document AI / Contracts AI extraction (if configured as an action)
-- Apex: `ContractAnalysisActions.createReview`
+- Apex: `CreateContractReviewAction.createReview`
 
 #### Topic 2: Clause Extraction & Classification
 **Description**: Extract specific clauses and classify them by type with exact spans.
@@ -60,7 +60,7 @@ Be conservative on classification. Cite the source text for every finding. If a 
 
 **Actions**:
 - Prompt Template: `Classify_Contract_Clause`
-- Apex: `ContractAnalysisActions.scoreClauseRisk` (optional preliminary scoring)
+- Apex: `ScoreClauseRiskAction.scoreClauseRisk` (optional preliminary scoring)
 
 #### Topic 3: Playbook & Risk Analysis
 **Description**: Compare clauses to playbook standards, score risk, and suggest fallbacks.
@@ -80,7 +80,7 @@ Ground every risk assessment in the clause text and playbook (if provided). Use 
 **Actions**:
 - Prompt Template: `Generate_Clause_Risk_Rationale`
 - Apex: `ContractAnalysisActions.runAnalysis`
-- Apex: `ContractAnalysisActions.scoreClauseRisk`
+- Apex: `ScoreClauseRiskAction.scoreClauseRisk`
 
 #### Topic 4: Citation & Authority Grounding
 **Description**: Resolve and validate legal citations or supporting authorities.
@@ -113,9 +113,31 @@ Present findings clearly. Escalate low-confidence or High-risk items explicitly.
 ```
 
 **Actions**:
-- Apex: `ContractAnalysisActions.captureOverride`
+- Apex: `CaptureOverrideAction.captureOverride`
 - Flow: `Complete_Contract_Review`
 - (Optional) Apex methods that create/update findings
+
+---
+
+### 2.1 Sub-agent Scopes and Classifications
+
+| Sub-agent / Topic | Primary Scope | Classification | Key Output |
+|-------------------|---------------|----------------|------------|
+| **Contract Intake & Structure** | Load & structure document | Orchestration / entry point | `Contract_Review__c` + structured text |
+| **Clause Extraction & Classification** | Identify & label clauses | Extraction + classification | Classified clause spans with exact excerpts |
+| **Playbook & Risk Analysis** | Compare to standards & score risk | Reasoning / risk assessment | Risk levels, rationales, fallback suggestions |
+| **Citation & Authority Grounding** | Resolve and validate citations | Grounding / retrieval | Citation status and supporting passages |
+| **Findings & Review** | Present results and capture feedback | Human-in-the-loop / presentation | Accepted or Overridden findings with notes |
+
+**Detailed scopes**:
+
+- **Contract Intake & Structure**: Accept a contract (PDF, DOCX, or text), recover sections/definitions/schedules, create the review record, and hand off structured content. Classification: Document processing / orchestration.
+- **Clause Extraction & Classification**: Segment into clause-level spans, classify against the taxonomy (Liability Limitation, Indemnification, Termination, etc.), and preserve section paths. Classification: Extraction + classification.
+- **Playbook & Risk Analysis**: Retrieve preferred positions, detect deviations and missing clauses, assign risk levels, and generate rationales or fallback language. Classification: Reasoning / risk assessment.
+- **Citation & Authority Grounding**: Parse citations, retrieve supporting authorities, and confirm they support the clause. Classification: Grounding / retrieval.
+- **Findings & Review**: Write findings to `Contract_Finding__c`, surface them in the LWC panel, capture Accept/Override + notes, and allow marking complete. Classification: Presentation / human-in-the-loop.
+
+These focused scopes keep routing reliable and ensure the lawyer remains the final decision maker.
 
 ---
 
