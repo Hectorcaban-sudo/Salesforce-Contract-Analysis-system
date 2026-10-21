@@ -5,7 +5,33 @@ Use these descriptions, loading messages, and input/output details when wiring a
 
 ---
 
-## 1. Run Contract Analysis
+## 1. Extract Contract with Document AI
+**Apex**: `ExtractContractAction.extractContract`
+
+**Action Description**  
+Extracts contract fields and clauses from a document using Document AI / Contracts AI. Handles non-standard formats, government agency variations, modifications (mods), and subcontract mods.
+
+**Loading Text**  
+Extracting contract details...
+
+**Inputs**  
+| Input | Description |
+|-------|-------------|
+| Document ID | ContentDocumentId or Salesforce File ID of the contract to extract. |
+| Extraction Template Name (optional) | Name of the Contracts AI extraction template to use (e.g. for mods or agency-specific formats). |
+
+**Outputs**  
+| Output | Description |
+|--------|-------------|
+| Extracted Fields JSON | JSON of extracted contract fields (parties, dates, governing law, etc.). |
+| Extracted Clauses JSON | JSON array of extracted clauses with type, excerpt, and section path. |
+| Document Type | Detected type: Base Contract, Modification, Subcontract Mod, Task Order, etc. |
+| Confidence Score | Overall extraction confidence (0-100). Low values should be flagged for human review. |
+| Status Message | Human-readable result or any warnings. |
+
+---
+
+## 2. Run Contract Analysis
 **Apex**: `ContractAnalysisActions.runAnalysis`
 
 **Action Description**  
@@ -29,7 +55,7 @@ Analyzing contract and scoring risk...
 
 ---
 
-## 2. Score Clause Risk
+## 3. Score Clause Risk
 **Apex**: `ScoreClauseRiskAction.scoreClauseRisk`
 
 **Action Description**  
@@ -52,7 +78,7 @@ Scoring clause risk...
 
 ---
 
-## 3. Create Contract Review Record
+## 4. Create Contract Review Record
 **Apex**: `CreateContractReviewAction.createReview`
 
 **Action Description**  
@@ -74,7 +100,7 @@ Creating contract review record...
 
 ---
 
-## 4. Capture Finding Override
+## 5. Capture Finding Override
 **Apex**: `CaptureOverrideAction.captureOverride`
 
 **Action Description**  
@@ -97,7 +123,7 @@ Saving review decision...
 
 ---
 
-## 5. Classify Contract Clause
+## 6. Classify Contract Clause
 **Prompt Template**: `Classify_Contract_Clause`
 
 **Action Description**  
@@ -118,7 +144,7 @@ Classifying clause...
 
 ---
 
-## 6. Generate Clause Risk Rationale
+## 7. Generate Clause Risk Rationale
 **Prompt Template**: `Generate_Clause_Risk_Rationale`
 
 **Action Description**  
@@ -141,7 +167,7 @@ Generating risk rationale...
 
 ---
 
-## 7. Complete Contract Review
+## 8. Complete Contract Review
 **Flow**: `Complete_Contract_Review`
 
 **Action Description**  
@@ -167,3 +193,4 @@ Completing review...
 - Use the **Loading Text** for the “Loading message” or progress indicator.
 - Map inputs/outputs using the descriptions above so the agent understands when and how to call each action.
 - Keep loading text short (under 60 characters preferred) so it displays cleanly in the chat UI.
+- For Extract Contract with Document AI: create multiple Contracts AI extraction templates (base, mod, subcontract mod, agency-specific) and pass the template name when needed. Flag results with confidence below 70 for human review.
