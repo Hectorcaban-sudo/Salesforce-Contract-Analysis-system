@@ -143,23 +143,49 @@ These focused scopes keep routing reliable and ensure the lawyer remains the fin
 
 ### 3. Sample Questions / Test Utterances
 
-Use these to test routing and behavior:
+Use these to test routing and behavior. Questions are grouped by expected primary topic.
 
-| Sample Question | Expected Topic |
-|-----------------|----------------|
-| "Analyze this NDA and extract the key clauses" | Contract Intake or Clause Extraction |
-| "What's the liability cap in this agreement and is it high risk?" | Playbook & Risk Analysis |
-| "Classify the termination clause and suggest fallback language" | Clause Extraction + Risk Analysis |
-| "Does the governing law clause match our playbook?" | Playbook & Risk Analysis |
-| "How does the indemnification interact with the liability limitation?" | Playbook & Risk Analysis |
-| "Show me the findings and let me override the high-risk items" | Findings & Review |
-| "Mark this review as complete" | Findings & Review |
-| "Validate the citation to Section 12 of the UCC" | Citation & Authority Grounding |
-| "Are there any missing standard clauses for a SaaS agreement?" | Clause Extraction |
-| "Extract the confidentiality obligations and score their risk" | Clause Extraction + Risk Analysis |
-| "What parties are involved and what is the governing law?" | Contract Intake |
-| "Flag any unlimited liability or uncapped indemnity language" | Playbook & Risk Analysis |
-| "Accept the termination finding and override the liability one with a note that we negotiated a $1M cap" | Findings & Review |
+#### Contract Intake & Structure
+- "Analyze this NDA and extract the key clauses"
+- "What parties are involved and what is the governing law?"
+- "Load this MSA and create a new review record"
+- "Summarize the structure of this agreement and list the major sections"
+- "Who are the parties and what is the effective date?"
+
+#### Clause Extraction & Classification
+- "Classify the termination clause and suggest fallback language"
+- "Are there any missing standard clauses for a SaaS agreement?"
+- "Extract the confidentiality obligations and score their risk"
+- "Find all indemnification clauses and show me the exact text"
+- "Identify the limitation of liability and any related carve-outs"
+- "What data protection or security commitments are in this contract?"
+
+#### Playbook & Risk Analysis
+- "What's the liability cap in this agreement and is it high risk?"
+- "Does the governing law clause match our playbook?"
+- "How does the indemnification interact with the liability limitation?"
+- "Flag any unlimited liability or uncapped indemnity language"
+- "Compare this termination for convenience language to our preferred position"
+- "Is the confidentiality survival period acceptable under our standards?"
+- "Score the risk of the assignment clause and recommend fallback language"
+
+#### Citation & Authority Grounding
+- "Validate the citation to Section 12 of the UCC"
+- "Does the reference to GDPR Article 28 actually support the data processing terms?"
+- "Check whether the cited case supports the indemnification position"
+- "Show me the supporting text for the governing law reference"
+
+#### Findings & Review
+- "Show me the findings and let me override the high-risk items"
+- "Mark this review as complete"
+- "Accept the termination finding and override the liability one with a note that we negotiated a $1M cap"
+- "List all high-risk findings and their excerpts"
+- "I want to add a note to the indemnification finding and mark it overridden"
+- "What is the overall risk score and which findings are still pending?"
+
+#### Mixed / Multi-step
+- "Analyze this contract, classify the key clauses, and flag anything that deviates from our playbook"
+- "Extract the liability and indemnification clauses, score them, and show me the findings"
 
 ---
 
