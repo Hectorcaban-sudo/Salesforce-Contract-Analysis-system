@@ -19,7 +19,7 @@
     <types>
         <members>Classify_Contract_Clause</members>
         <members>Generate_Clause_Risk_Rationale</members>
-        <name>PromptTemplate</name>
+        <name>GenAiPromptTemplate</name>
     </types>
     <types>
         <members>contractFindingsPanel</members>
