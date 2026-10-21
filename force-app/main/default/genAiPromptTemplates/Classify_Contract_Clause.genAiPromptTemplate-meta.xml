@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <developerName>Classify_Contract_Clause</developerName>
+    <masterLabel>Classify Contract Clause</masterLabel>
+    <description>Classifies a contract clause excerpt into a standard type and assigns a preliminary risk level.</description>
+    <templateVersions>
+        <content>You are a legal contract analysis assistant. Classify the following clause excerpt.
+
+Clause text:
+{!$Input:ClauseText}
+
+Return a JSON object with:
+- clauseType (e.g. Liability Limitation, Termination, Governing Law, Indemnification, Confidentiality)
+- riskLevel (Low, Medium, High)
+- shortRationale
+
+Be precise and conservative on risk.</content>
+        <inputs>
+            <apiName>ClauseText</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Clause Text</masterLabel>
+            <referenceName>Input:ClauseText</referenceName>
+            <required>true</required>
+        </inputs>
+        <status>Published</status>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>
