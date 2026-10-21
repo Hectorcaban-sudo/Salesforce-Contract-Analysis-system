@@ -4,7 +4,7 @@ These diagrams illustrate the Contract Analysis system architecture and human in
 
 ## System Architecture
 
-![Contract Analysis System Architecture](system-architecture.jpg)
+![Contract Analysis System Architecture](system-architecture1.jpg)
 
 **Layers:**
 1. Document Ingestion (Document AI / Contracts AI)
