@@ -11,9 +11,19 @@ public with sharing class CaptureOverrideAction {
         public String note;
     }
 
-    @AuraEnabled
+    // For Agentforce / Flows
     @InvocableMethod(label='Capture Finding Override' description='Marks a finding as Accepted or Overridden and stores optional note.')
     public static List<String> captureOverride(List<OverrideRequest> requests) {
+        return doCapture(requests);
+    }
+
+    // For LWC
+    @AuraEnabled
+    public static List<String> captureOverrideAura(List<OverrideRequest> requests) {
+        return doCapture(requests);
+    }
+
+    private static List<String> doCapture(List<OverrideRequest> requests) {
         List<String> results = new List<String>();
         for (OverrideRequest req : requests) {
             Contract_Finding__c finding = new Contract_Finding__c(
