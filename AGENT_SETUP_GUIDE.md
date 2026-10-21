@@ -146,7 +146,17 @@ These focused scopes keep routing reliable and ensure the lawyer remains the fin
 
 ### 3. Sample Questions / Test Utterances
 
-Use these to test routing and behavior. Questions are grouped by expected primary topic.
+Use these to test routing and behavior. Questions are grouped by expected primary topic and by contract type.
+
+#### By Contract Type
+- **NDA**: "Analyze this NDA and extract the confidentiality obligations and any exceptions."
+- **MSA**: "Load this MSA, identify the liability cap, and check it against our playbook."
+- **SaaS Agreement**: "Extract the data protection and security clauses from this SaaS agreement and score their risk."
+- **Base Contract**: "Analyze this base contract and summarize the key commercial terms."
+- **Modification (Mod)**: "This is a GSA schedule mod — extract the key changes and flag any high-risk updates."
+- **Subcontract Mod**: "Analyze this subcontract modification from a DoD agency and compare the indemnification to our standards."
+- **Task Order**: "Review this task order and extract the period of performance and any special clauses."
+- **Government Contract**: "Analyze this government contract and identify any FAR or agency-specific requirements."
 
 #### Contract Intake & Structure
 - "Analyze this NDA and extract the key clauses"
