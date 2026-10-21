@@ -7,6 +7,9 @@
     </types>
     <types>
         <members>ContractAnalysisActions</members>
+        <members>ScoreClauseRiskAction</members>
+        <members>CreateContractReviewAction</members>
+        <members>CaptureOverrideAction</members>
         <name>ApexClass</name>
     </types>
     <types>
