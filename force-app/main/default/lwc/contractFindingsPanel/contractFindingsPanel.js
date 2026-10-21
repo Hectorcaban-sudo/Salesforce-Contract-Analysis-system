@@ -1,7 +1,7 @@
 import { LightningElement, api, wire } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { getRelatedListRecords } from 'lightning/uiRelatedListApi';
-import captureOverride from '@salesforce/apex/CaptureOverrideAction.captureOverride';
+import captureOverride from '@salesforce/apex/CaptureOverrideAction.captureOverrideAura';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
