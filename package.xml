@@ -12,6 +12,7 @@
         <members>CaptureOverrideAction</members>
         <members>ExtractContractAction</members>
         <members>IntelligentContextRetrievalAction</members>
+        <members>PresentFindingsInUIAction</members>
         <name>ApexClass</name>
     </types>
     <types>
