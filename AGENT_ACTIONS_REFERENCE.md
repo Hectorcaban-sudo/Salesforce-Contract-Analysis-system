@@ -126,7 +126,30 @@ Creating contract review record...
 
 ---
 
-## 6. Capture Finding Override
+## 6. Present Findings in UI
+**Apex**: `PresentFindingsInUIAction.presentFindings`
+
+**Action Description**  
+Builds a PresentInUI payload with contract findings and a direct record link so the lawyer can review Accept/Override inside the agent chat.
+
+**Loading Text**  
+Preparing findings for review...
+
+**Inputs**  
+| Input | Description |
+|-------|-------------|
+| Review Id | Salesforce ID of the Contract_Review__c record whose findings should be presented. |
+
+**Outputs**  
+| Output | Description |
+|--------|-------------|
+| UI Payload JSON | JSON payload for PresentInUI containing findings list and record link. |
+| Record Link | Direct URL to the Contract Review record. |
+| Summary Message | Short message the agent can show with the UI. |
+
+---
+
+## 7. Capture Finding Override
 **Apex**: `CaptureOverrideAction.captureOverride`
 
 **Action Description**  
@@ -149,7 +172,7 @@ Saving review decision...
 
 ---
 
-## 7. Classify Contract Clause
+## 8. Classify Contract Clause
 **Prompt Template**: `Classify_Contract_Clause`
 
 **Action Description**  
@@ -170,7 +193,7 @@ Classifying clause...
 
 ---
 
-## 8. Generate Clause Risk Rationale
+## 9. Generate Clause Risk Rationale
 **Prompt Template**: `Generate_Clause_Risk_Rationale`
 
 **Action Description**  
@@ -193,7 +216,7 @@ Generating risk rationale...
 
 ---
 
-## 9. Complete Contract Review
+## 10. Complete Contract Review
 **Flow**: `Complete_Contract_Review`
 
 **Action Description**  
@@ -221,3 +244,4 @@ Completing review...
 - Keep loading text short (under 60 characters preferred) so it displays cleanly in the chat UI.
 - For Extract Contract with Document AI: create multiple Contracts AI extraction templates (base, mod, subcontract mod, agency-specific) and pass the template name when needed. Flag results with confidence below 70 for human review.
 - For Retrieve Intelligent Context: create indexes for playbooks, regulations, historical contracts, and agency-specific content. Pass the appropriate index name for the query type.
+- For Present Findings in UI: the action returns a payload and record link; the Agentforce runtime determines how the card is rendered in chat. Always also provide the record link as a fallback.
