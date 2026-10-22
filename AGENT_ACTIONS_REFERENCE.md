@@ -31,7 +31,33 @@ Extracting contract details...
 
 ---
 
-## 2. Run Contract Analysis
+## 2. Retrieve Intelligent Context
+**Apex**: `IntelligentContextRetrievalAction.retrieveContext`
+
+**Action Description**  
+Retrieves supporting passages from Intelligent Context / Data Cloud indexes for citation validation, playbook comparison, or authority grounding.
+
+**Loading Text**  
+Retrieving supporting context...
+
+**Inputs**  
+| Input | Description |
+|-------|-------------|
+| Search Query | The citation, clause text, or question to retrieve supporting context for. |
+| Index Name (optional) | Intelligent Context / Data Cloud index to search (e.g. Playbooks, Regulations, HistoricalContracts). |
+| Max Results (optional) | Maximum number of supporting passages to return. Defaults to 5. |
+
+**Outputs**  
+| Output | Description |
+|--------|-------------|
+| Supporting Passages JSON | JSON array of retrieved passages with source, text, and relevance score. |
+| Citation Status | Supported, Partially Supported, Not Supported, or Insufficient Context. |
+| Confidence Score | Confidence that the retrieved context supports the claim (0-100). |
+| Status Message | Human-readable result or any warnings. |
+
+---
+
+## 3. Run Contract Analysis
 **Apex**: `ContractAnalysisActions.runAnalysis`
 
 **Action Description**  
@@ -55,7 +81,7 @@ Analyzing contract and scoring risk...
 
 ---
 
-## 3. Score Clause Risk
+## 4. Score Clause Risk
 **Apex**: `ScoreClauseRiskAction.scoreClauseRisk`
 
 **Action Description**  
@@ -78,7 +104,7 @@ Scoring clause risk...
 
 ---
 
-## 4. Create Contract Review Record
+## 5. Create Contract Review Record
 **Apex**: `CreateContractReviewAction.createReview`
 
 **Action Description**  
@@ -100,7 +126,7 @@ Creating contract review record...
 
 ---
 
-## 5. Capture Finding Override
+## 6. Capture Finding Override
 **Apex**: `CaptureOverrideAction.captureOverride`
 
 **Action Description**  
@@ -123,7 +149,7 @@ Saving review decision...
 
 ---
 
-## 6. Classify Contract Clause
+## 7. Classify Contract Clause
 **Prompt Template**: `Classify_Contract_Clause`
 
 **Action Description**  
@@ -144,7 +170,7 @@ Classifying clause...
 
 ---
 
-## 7. Generate Clause Risk Rationale
+## 8. Generate Clause Risk Rationale
 **Prompt Template**: `Generate_Clause_Risk_Rationale`
 
 **Action Description**  
@@ -167,7 +193,7 @@ Generating risk rationale...
 
 ---
 
-## 8. Complete Contract Review
+## 9. Complete Contract Review
 **Flow**: `Complete_Contract_Review`
 
 **Action Description**  
@@ -194,3 +220,4 @@ Completing review...
 - Map inputs/outputs using the descriptions above so the agent understands when and how to call each action.
 - Keep loading text short (under 60 characters preferred) so it displays cleanly in the chat UI.
 - For Extract Contract with Document AI: create multiple Contracts AI extraction templates (base, mod, subcontract mod, agency-specific) and pass the template name when needed. Flag results with confidence below 70 for human review.
+- For Retrieve Intelligent Context: create indexes for playbooks, regulations, historical contracts, and agency-specific content. Pass the appropriate index name for the query type.
