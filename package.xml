@@ -22,6 +22,7 @@
     <types>
         <members>Classify_Contract_Clause</members>
         <members>Generate_Clause_Risk_Rationale</members>
+        <members>Compare_Clause_to_Playbook</members>
         <name>GenAiPromptTemplate</name>
     </types>
     <types>
