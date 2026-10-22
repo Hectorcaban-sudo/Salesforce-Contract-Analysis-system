@@ -31,11 +31,11 @@ Extracting contract details...
 
 ---
 
-## 2. Retrieve Intelligent Context
-**Apex**: `IntelligentContextRetrievalAction.retrieveContext`
+## 2. Retrieve Playbook & Authority Context (Data Library / Retriever)
+**Type**: Data Library / Retriever (Intelligent Context search index)
 
 **Action Description**  
-Retrieves supporting passages from Intelligent Context / Data Cloud indexes for citation validation, playbook comparison, or authority grounding.
+Retrieves supporting passages from the Intelligent Context search index (playbook, taxonomy, regulations, historical contracts) for citation validation, playbook comparison, or authority grounding.
 
 **Loading Text**  
 Retrieving supporting context...
@@ -44,16 +44,16 @@ Retrieving supporting context...
 | Input | Description |
 |-------|-------------|
 | Search Query | The citation, clause text, or question to retrieve supporting context for. |
-| Index Name (optional) | Intelligent Context / Data Cloud index to search (e.g. Playbooks, Regulations, HistoricalContracts). |
-| Max Results (optional) | Maximum number of supporting passages to return. Defaults to 5. |
 
 **Outputs**  
 | Output | Description |
 |--------|-------------|
-| Supporting Passages JSON | JSON array of retrieved passages with source, text, and relevance score. |
-| Citation Status | Supported, Partially Supported, Not Supported, or Insufficient Context. |
-| Confidence Score | Confidence that the retrieved context supports the claim (0-100). |
-| Status Message | Human-readable result or any warnings. |
+| Retrieved Passages | Supporting text passages with source document and relevance. |
+
+**Notes**  
+- Create the Retriever on the published Intelligent Context search index.
+- Wire this action on the Playbook & Risk Analysis and Citation & Authority Grounding topics.
+- Preferred over the Apex `IntelligentContextRetrievalAction` (which remains an optional fallback).
 
 ---
 
@@ -243,5 +243,5 @@ Completing review...
 - Map inputs/outputs using the descriptions above so the agent understands when and how to call each action.
 - Keep loading text short (under 60 characters preferred) so it displays cleanly in the chat UI.
 - For Extract Contract with Document AI: create multiple Contracts AI extraction templates (base, mod, subcontract mod, agency-specific) and pass the template name when needed. Flag results with confidence below 70 for human review.
-- For Retrieve Intelligent Context: create indexes for playbooks, regulations, historical contracts, and agency-specific content. Pass the appropriate index name for the query type.
+- For Retrieve Playbook & Authority Context: use a Data Library / Retriever on the Intelligent Context search index. Do not wire the Apex `IntelligentContextRetrievalAction` unless you need custom logic.
 - For Present Findings in UI: the action returns a payload and record link; the Agentforce runtime determines how the card is rendered in chat. Always also provide the record link as a fallback.
