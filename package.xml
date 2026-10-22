@@ -11,6 +11,7 @@
         <members>CreateContractReviewAction</members>
         <members>CaptureOverrideAction</members>
         <members>ExtractContractAction</members>
+        <members>IntelligentContextRetrievalAction</members>
         <name>ApexClass</name>
     </types>
     <types>
