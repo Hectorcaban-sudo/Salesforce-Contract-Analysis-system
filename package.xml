@@ -28,6 +28,7 @@
     </types>
     <types>
         <members>contractFindingsPanel</members>
+        <members>contractReviewWorkspace</members>
         <name>LightningComponentBundle</name>
     </types>
     <version>64.0</version>
