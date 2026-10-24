@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <developerName>Extract_Contract_Document</developerName>
+    <masterLabel>Extract Contract Document</masterLabel>
+    <description>Extracts contract fields, document type, and key clauses from an uploaded contract document.</description>
+    <templateVersions>
+        <content>You are a commercial contracts extraction assistant.
+
+Extract structured information from the attached contract document.
+
+Optional extraction template / document type hint: {!$Input:TemplateName}
+
+Return ONLY valid JSON in this exact shape (no markdown, no commentary):
+{
+  "documentType": "Base Contract | Modification | Subcontract Mod | Task Order | NDA | MSA | SaaS | Government Contract | Other",
+  "parties": ["Party A", "Party B"],
+  "effectiveDate": "YYYY-MM-DD or null",
+  "expirationDate": "YYYY-MM-DD or null",
+  "governingLaw": "string or null",
+  "contractNumber": "string or null",
+  "modNumber": "string or null",
+  "agencyOrVehicle": "string or null",
+  "clauses": [
+    {
+      "clauseType": "Liability Limitation | Indemnification | Termination | Governing Law | Confidentiality | Data Protection | Intellectual Property | Assignment | Force Majeure | Audit Rights | Limitation of Remedies | Payment Terms | Warranty | Non-Solicitation | Other",
+      "excerpt": "exact or closely matching text span",
+      "section": "section or clause number if present"
+    }
+  ],
+  "confidenceScore": 0
+}
+
+Rules:
+- Prefer exact text spans for excerpts.
+- Detect whether the document is a base contract, modification/mod, subcontract mod, or task order.
+- If the format is non-standard or confidence is low, still return the best extraction and set confidenceScore below 70.
+- Do not invent parties, dates, or clause text that is not supported by the document.
+</content>
+        <inputs>
+            <apiName>InputFile</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Input File</masterLabel>
+            <referenceName>Input:InputFile</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>TemplateName</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Template Name</masterLabel>
+            <referenceName>Input:TemplateName</referenceName>
+            <required>false</required>
+        </inputs>
+        <status>Published</status>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>
