@@ -1,0 +1,70 @@
+<template>
+    <div class="workspace">
+        <div class="header">
+            <div>
+                <h1 class="title">{reviewName}</h1>
+                <p class="subtitle">Contract Review Workspace</p>
+            </div>
+            <div class="header-metrics">
+                <div class={overallRiskClass}>
+                    <span class="score">{riskScore}/100</span>
+                    <span class="label">{overallRiskLabel}</span>
+                </div>
+                <div class="status-pill">{status}</div>
+            </div>
+        </div>
+
+        <div class="panes">
+            <!-- Document Viewer -->
+            <section class="pane document-pane">
+                <div class="pane-header">Document Viewer</div>
+                <div class="document-body">
+                    <template if:true={selectedExcerpt}>
+                        <p class="doc-label">Selected clause excerpt</p>
+                        <div class="highlight">{selectedExcerpt}</div>
+                    </template>
+                    <template if:false={selectedExcerpt}>
+                        <p class="empty">Upload a contract and run analysis. Clause excerpts will appear here when you select a finding.</p>
+                    </template>
+                    <p class="hint">Starter viewer — wire a PDF component or ContentVersion preview for full document highlighting.</p>
+                </div>
+            </section>
+
+            <!-- AI Findings -->
+            <section class="pane findings-pane">
+                <div class="pane-header">AI Findings</div>
+                <template if:true={hasFindings}>
+                    <template for:each={findings} for:item="finding">
+                        <article key={finding.id} class={finding.riskClass} data-id={finding.id} onclick={handleSelectFinding}>
+                            <div class="card-header">
+                                <h3>{finding.clauseType}</h3>
+                                <span class={finding.badgeClass}>{finding.riskLevel}</span>
+                            </div>
+                            <p class="excerpt">{finding.excerpt}</p>
+                            <template if:true={finding.reviewStatus}>
+                                <p class="status">Status: {finding.reviewStatus}</p>
+                            </template>
+                            <template if:true={finding.overrideNote}>
+                                <p class="note">Note: {finding.overrideNote}</p>
+                            </template>
+                            <lightning-textarea
+                                label="Override Note"
+                                data-id={finding.id}
+                                placeholder="Optional note if overriding..."
+                                class="slds-m-top_x-small">
+                            </lightning-textarea>
+                            <div class="actions">
+                                <lightning-button label="Accept" data-id={finding.id} onclick={handleAccept} variant="brand"></lightning-button>
+                                <lightning-button label="Override" data-id={finding.id} onclick={handleOverride} variant="neutral"></lightning-button>
+                            </div>
+                        </article>
+                    </template>
+                </template>
+                <template if:false={hasFindings}>
+                    <p class="empty">No findings yet. Run analysis from the agent.</p>
+                </template>
+                <p class="footer-hint">AI findings are suggestions. Please review and take action.</p>
+            </section>
+        </div>
+    </div>
+</template>
