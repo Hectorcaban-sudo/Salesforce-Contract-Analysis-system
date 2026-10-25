@@ -1,8 +1,7 @@
 /**
  * Gov High intake path.
- * 1. Tries Document AI extraction first (configurable schema name).
- * 2. Falls back to the Extract_Contract_Document prompt template.
- * 3. Invokes the active Agentforce agent with the extraction result.
+ * DML and callouts are in separate transactions so Agentforce can be invoked
+ * and failed reviews can be reprocessed.
  */
 public with sharing class ContractIntakeController {
 
@@ -18,10 +17,6 @@ public with sharing class ContractIntakeController {
         @AuraEnabled public String extractionSource;
     }
 
-    /**
-     * Returns the user's most recent empty Draft, or creates one if none exists.
-     * Prevents a new record on every page load.
-     */
     @AuraEnabled
     public static Id getOrCreateDraft() {
         List<Contract_Review__c> existing = [
@@ -45,6 +40,10 @@ public with sharing class ContractIntakeController {
         return review.Id;
     }
 
+    /**
+     * DML only. Creates or updates the review and links the file.
+     * Call runAnalysis in a second request to invoke Agentforce.
+     */
     @AuraEnabled
     public static IntakeResult startAnalysis(
         String contentDocumentId,
@@ -63,18 +62,40 @@ public with sharing class ContractIntakeController {
 
         IntakeResult result = new IntakeResult();
         result.reviewId = review.Id;
+        return result;
+    }
 
-        ExtractionOutcome extraction = extractWithDocumentAi(contentDocumentId, documentType);
+    /**
+     * Callouts only. Extracts and invokes the agent. Safe to re-run on Error records.
+     */
+    @AuraEnabled
+    public static IntakeResult runAnalysis(Id reviewId) {
+        Contract_Review__c review = [
+            SELECT Id, Name, ContentDocumentId__c, Document_Type__c, Agency__c, Notes__c, Status__c
+            FROM Contract_Review__c
+            WHERE Id = :reviewId
+            LIMIT 1
+        ];
+
+        if (String.isBlank(review.ContentDocumentId__c)) {
+            throw new AuraHandledException('This review has no attached file.');
+        }
+
+        IntakeResult result = new IntakeResult();
+        result.reviewId = review.Id;
+
+        ExtractionOutcome extraction = extractWithDocumentAi(review.ContentDocumentId__c, review.Document_Type__c);
         if (!extraction.success) {
-            extraction = extractWithPromptTemplate(contentDocumentId, documentType);
+            extraction = extractWithPromptTemplate(review.ContentDocumentId__c, review.Document_Type__c);
         }
         result.extractionSource = extraction.source;
 
         review.Extraction_Source__c = extraction.source;
         review.Extraction_Json__c = extraction.jsonText;
+        review.Status__c = 'In Progress';
         update review;
 
-        String userMessage = buildAgentMessage(contentDocumentId, documentType, agency, review, extraction);
+        String userMessage = buildAgentMessage(review, extraction);
 
         try {
             Invocable.Action action = Invocable.Action.createCustomAction(
@@ -216,18 +237,12 @@ public with sharing class ContractIntakeController {
         return outcome;
     }
 
-    private static String buildAgentMessage(
-        String contentDocumentId,
-        String documentType,
-        String agency,
-        Contract_Review__c review,
-        ExtractionOutcome extraction
-    ) {
+    private static String buildAgentMessage(Contract_Review__c review, ExtractionOutcome extraction) {
         return
-            'Analyze this contract. ContentDocumentId: ' + contentDocumentId +
+            'Analyze this contract. ContentDocumentId: ' + review.ContentDocumentId__c +
             '. Review record Id: ' + review.Id +
-            '. Document type: ' + (documentType == null ? 'Unknown' : documentType) +
-            '. Agency: ' + (agency == null ? 'Unknown' : agency) +
+            '. Document type: ' + (review.Document_Type__c == null ? 'Unknown' : review.Document_Type__c) +
+            '. Agency: ' + (review.Agency__c == null ? 'Unknown' : review.Agency__c) +
             '. Extraction source: ' + extraction.source +
             '. Extracted JSON: ' + (extraction.jsonText == null ? '' : extraction.jsonText.abbreviate(12000)) +
             '. Compare clauses to the playbook and taxonomy. Create findings. ' +
