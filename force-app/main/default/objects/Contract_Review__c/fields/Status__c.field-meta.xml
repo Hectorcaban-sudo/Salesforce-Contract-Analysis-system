@@ -8,6 +8,11 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
+                <fullName>Draft</fullName>
+                <default>false</default>
+                <label>Draft</label>
+            </value>
+            <value>
                 <fullName>In Progress</fullName>
                 <default>true</default>
                 <label>In Progress</label>
@@ -21,6 +26,11 @@
                 <fullName>Completed</fullName>
                 <default>false</default>
                 <label>Completed</label>
+            </value>
+            <value>
+                <fullName>Error</fullName>
+                <default>false</default>
+                <label>Error</label>
             </value>
         </valueSetDefinition>
     </valueSet>
