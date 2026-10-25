@@ -8,11 +8,10 @@ This guide covers technical deployment, admin configuration, day-to-day operatio
 ## 1. Technical Deployment
 
 ### Prerequisites
-- Salesforce org with **Agentforce**, **Data Cloud (Data 360)**, and **Einstein Generative AI** enabled
+- Salesforce org with **Agentforce** and **Einstein Generative AI** enabled
 - Salesforce CLI (`sf`) installed
-- VS Code with Salesforce Extension Pack + Agentforce DX extensions (recommended)
-- Contracts AI / Salesforce Contracts license (recommended for full Document AI features)
-- API version 64+
+- API version **68.0**
+- Gov High: Agent Script may be unavailable. Use the intake page path below.
 
 ### Steps
 1. Clone the repository:
@@ -31,132 +30,65 @@ This guide covers technical deployment, admin configuration, day-to-day operatio
    sf project deploy start --source-dir force-app
    ```
 
-4. Verify deployment:
-   - Custom objects `Contract_Review__c` and `Contract_Finding__c` exist
-   - Apex class `ContractAnalysisActions` is active
-   - Prompt templates and Flow are present
-   - LWC `contractFindingsPanel` is available
-
 ### Key Deployed Components
 | Component | Type | Purpose |
 |-----------|------|---------|
 | `Contract_Review__c` | Custom Object | Parent review record |
 | `Contract_Finding__c` | Custom Object | Individual clause findings |
-| `ContractAnalysisActions` | Apex Class | Invocable analysis & override actions |
-| `Classify_Contract_Clause` | Prompt Template | Clause classification |
-| `Generate_Clause_Risk_Rationale` | Prompt Template | Risk rationale + fallback language |
-| `Complete_Contract_Review` | Flow | Mark review complete |
-| `contractFindingsPanel` | LWC | Lawyer review UI (Accept / Override + note) |
+| `ContractIntakeController` | Apex Class | Upload path: creates review and invokes Agentforce headlessly |
+| `contractIntake` | LWC | Upload page for lawyers (no chat file upload required) |
+| `contractReviewWorkspace` | LWC | Dual-pane review UI |
+| `Extract_Contract_Document` | Prompt Template | Contract extraction |
+| `Compare_Clause_to_Playbook` | Prompt Template | Playbook comparison |
 
 ---
 
-## 2. Admin Configuration
+## 2. Gov High path (no Agent Script, no chat file upload)
 
-### Post-Deploy Setup
-1. **Permissions**
-   - Create a Permission Set (e.g., `Contract_Analysis_User`) granting:
-     - Read/Create/Edit on `Contract_Review__c` and `Contract_Finding__c`
-     - Access to the Apex class and Flow
-   - Assign to legal users and the Agentforce agent user (if applicable)
+Agent Script files remain in the repo for later. They are not required for this path.
 
-2. **Agentforce**
-   - Enable Agentforce in Setup
-   - Create the agent following `AGENT_SETUP_GUIDE.md`
-   - Wire the Apex methods, Prompt Templates, and Flow as actions under the five topics
+1. Deploy the project.
+2. Create and activate the Contract Analysis Agent in the **Legacy Builder** (or New Builder if available).
+3. Confirm the agent API name is `Contract_Analysis_Agent`. If different, update `AGENT_API_NAME` in `ContractIntakeController.cls`.
+4. Assign a permission set with access to `Contract_Review__c`, `Contract_Finding__c`, Files, and the Apex class.
+5. Create an App Page:
+   - Lightning App Builder → New → App Page
+   - Add the **contractIntake** component (or activate the deployed `Contract_Intake_Page`)
+   - Activate for your legal app
+6. Add `contractReviewWorkspace` to the Contract Review Lightning record page.
+7. Lawyers open the intake page, upload a PDF/DOCX, set type/agency, and click **Upload & Run Analysis**.
+8. The page creates the review, links the file, and calls Agentforce via `generateAiAgentResponse`.
+9. The user is taken to the Contract Review Workspace to Accept/Override findings.
 
-3. **Document AI / Contracts AI** (recommended)
-   - Enable Document AI / Contracts AI
-   - Configure extraction schemas or context definitions for contract fields and clauses
-   - Make extraction available as an Agentforce action (or call via Apex)
-
-4. **Data Cloud / Intelligent Context / Knowledge Harmonization**
-   - Enable Data Cloud and Intelligent Context
-   - Create search index configurations for contracts, playbooks, and authorities
-   - Turn on Knowledge Harmonization for consistent citation rendering and highlighting
-   - Ingest playbooks and historical precedents
-
-5. **UI**
-   - Add the `contractFindingsPanel` LWC to the Contract Review Lightning record page
-   - (Optional) Create a list view or app for legal users
-
-6. **Security & Governance**
-   - Review sharing rules (default is private/controlled by parent)
-   - Confirm Einstein trust boundary and data residency settings
-   - Enable audit logging if required by your compliance program
+### Agent API name
+If the headless call fails with "AgentIAType not found", the agent is not active or the API name does not match. Copy the exact API name from the agent Details page and set it in `ContractIntakeController.cls`.
 
 ---
 
-## 3. One-Time / Ongoing Operations
+## 3. Admin Configuration
 
-### One-Time Setup Checklist
-- [ ] Deploy metadata
-- [ ] Assign permissions
-- [ ] Create and activate the Agentforce agent
-- [ ] Configure Document AI schemas
-- [ ] Set up Intelligent Context indexes + Knowledge Harmonization
-- [ ] Add LWC to record page
-- [ ] Test end-to-end with a sample contract
-
-### Ongoing Operations
-- **Index maintenance**: Re-index new playbooks or contract templates in Data Cloud
-- **Prompt / instruction tuning**: Update topic instructions or prompt templates based on lawyer feedback
-- **Feedback loop**: Review Override notes stored on `Contract_Finding__c` to improve future analysis
-- **Monitoring**: Check Agentforce conversation logs and error rates
-- **License / limit monitoring**: Track Document AI and Einstein credit consumption
+1. Permissions for legal users and the agent user.
+2. Agentforce enabled; agent active.
+3. Prompt templates deployed and available as agent actions.
+4. LWC on the intake app page and on the Contract Review record page.
 
 ---
 
-## 4. Files & Actions Needed by Lawyers and Stakeholders
-
-### For Lawyers (Day-to-Day Use)
-| Need | How to Access | Related File / Action |
-|------|---------------|-----------------------|
-| Start a new review | Chat with the Contract Analysis Agent | Agentforce agent + `createReview` action |
-| View findings | Open Contract Review record | LWC `contractFindingsPanel` |
-| Accept a finding | Click **Accept** on the LWC | Apex `captureOverride` |
-| Override a finding + add note | Enter note + click **Override** | Apex `captureOverride` + `Override_Note__c` field |
-| Mark review complete | Ask the agent or run Flow | Flow `Complete_Contract_Review` |
-| Ask questions about a contract | Chat with the agent | Agent topics (Intake, Extraction, Risk, Citation, Review) |
-
-### For Stakeholders / Legal Ops
-| Need | Location | Purpose |
-|------|----------|---------|
-| Architecture overview | `README.md` | Understand the system design |
-| Manual agent setup | `AGENT_SETUP_GUIDE.md` | Create or refine the Agentforce agent |
-| Sample agent spec | `sample-agent-spec.yaml` | Starting point for Agentforce DX |
-| Sample agent script | `sample-agent-script.agent` | Topic instructions + action mappings |
-| This deployment guide | `DEPLOYMENT_GUIDE.md` | Technical + admin + operations checklist |
-| Feedback data | `Contract_Finding__c.Override_Note__c` | Improve playbooks and prompts |
-
-### Recommended Lawyer Workflow
-1. Upload or reference a contract and ask the agent to analyze it.
-2. Review the summary and overall risk score.
-3. Open the Contract Review record and use the Findings Panel LWC.
-4. Accept or Override individual findings (add notes on overrides).
-5. Ask follow-up questions (e.g., cross-clause interaction, citation validation).
-6. Mark the review complete when finished.
+## 4. Lawyer workflow (Gov High)
+1. Open the Contract Intake page.
+2. Upload the contract (PDF or DOCX).
+3. Set document type and agency.
+4. Click **Upload & Run Analysis**.
+5. Review findings in the Contract Review Workspace.
+6. Accept or Override each finding.
+7. Use **Re-run Analysis** if needed.
 
 ---
 
-## 5. Quick Reference Commands
+## 5. Quick Reference
 
 ```bash
-# Deploy
 sf project deploy start --source-dir force-app
-
-# Generate agent spec (Agentforce DX)
-sf agent generate agent-spec --name ContractAnalysisAgent --type Employee \
-  --role "Analyze commercial contracts for risk, clause compliance, and playbook alignment"
-
-# Retrieve agent metadata
-sf project retrieve start --metadata AiAgentDefinitionVersion --root-type-with-dependencies AiAgentDefinitionVersion
 ```
 
----
-
-## 6. Support & Next Steps
-- Start with the sample questions in `AGENT_SETUP_GUIDE.md` to validate routing.
-- Extend the Apex stubs in `ContractAnalysisActions.cls` to call real Document AI, external services, or Data Cloud retrievers.
-- Use lawyer Override notes as labeled data for future prompt or retrieval improvements.
-
-The system is designed to be assistive. Lawyers retain final accountability for all legal judgments.
+Agent Script / DX files (`specs/`, `sample-agent-spec.yaml`) are retained for when Gov High enables scripts. They are not required for the intake path.
