@@ -83,18 +83,41 @@
 
 .pdf-frame {
     width: 100%;
-    height: 420px;
+    height: 380px;
     border: 1px solid #dddbda;
     border-radius: 0.25rem;
     margin-bottom: 0.75rem;
 }
 
-.highlight {
-    background: #fff3bf;
+.clause-highlight {
+    background: #fff8e1;
+    border: 1px solid #e3b505;
     border-left: 4px solid #e3b505;
-    padding: 0.75rem;
     border-radius: 0.25rem;
+    padding: 0.75rem;
+}
+
+.clause-highlight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.highlight-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #8a6d00;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.highlight-text {
+    margin: 0 0 0.5rem;
     line-height: 1.45;
+    background: #fff3bf;
+    padding: 0.5rem;
+    border-radius: 0.2rem;
 }
 
 .doc-label, .hint, .footer-hint, .empty {
@@ -108,6 +131,11 @@
     padding: 0.75rem;
     margin-bottom: 0.75rem;
     cursor: pointer;
+}
+
+.finding-card.selected {
+    box-shadow: 0 0 0 2px #0176d3;
+    background: #f3f9ff;
 }
 
 .finding-card.risk-high { border-left: 4px solid #c23934; }
