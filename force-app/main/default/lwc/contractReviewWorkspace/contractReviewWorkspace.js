@@ -2,13 +2,17 @@ import { LightningElement, api, wire } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { getRelatedListRecords } from 'lightning/uiRelatedListApi';
 import captureOverride from '@salesforce/apex/CaptureOverrideAction.captureOverrideAura';
+import startAnalysis from '@salesforce/apex/ContractIntakeController.startAnalysis';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 const REVIEW_FIELDS = [
     'Contract_Review__c.Name',
     'Contract_Review__c.Overall_Risk_Score__c',
-    'Contract_Review__c.Status__c'
+    'Contract_Review__c.Status__c',
+    'Contract_Review__c.ContentDocumentId__c',
+    'Contract_Review__c.Document_Type__c',
+    'Contract_Review__c.Agency__c'
 ];
 
 const FINDING_FIELDS = [
@@ -25,6 +29,9 @@ export default class ContractReviewWorkspace extends LightningElement {
     reviewName;
     riskScore;
     status;
+    contentDocumentId;
+    documentType;
+    agency;
     findingsResult;
     findings = [];
     selectedExcerpt = '';
@@ -35,7 +42,16 @@ export default class ContractReviewWorkspace extends LightningElement {
             this.reviewName = getFieldValue(data, 'Contract_Review__c.Name');
             this.riskScore = getFieldValue(data, 'Contract_Review__c.Overall_Risk_Score__c');
             this.status = getFieldValue(data, 'Contract_Review__c.Status__c');
+            this.contentDocumentId = getFieldValue(data, 'Contract_Review__c.ContentDocumentId__c');
+            this.documentType = getFieldValue(data, 'Contract_Review__c.Document_Type__c');
+            this.agency = getFieldValue(data, 'Contract_Review__c.Agency__c');
         }
+    }
+
+    get pdfUrl() {
+        return this.contentDocumentId
+            ? `/sfc/servlet.shepherd/document/download/${this.contentDocumentId}`
+            : null;
     }
 
     @wire(getRelatedListRecords, {
@@ -102,6 +118,39 @@ export default class ContractReviewWorkspace extends LightningElement {
         const found = this.findings.find((f) => f.id === id);
         if (found) {
             this.selectedExcerpt = found.excerpt;
+        }
+    }
+
+    async handleRerun() {
+        if (!this.contentDocumentId) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'No file',
+                message: 'This review has no attached contract file.',
+                variant: 'warning'
+            }));
+            return;
+        }
+        try {
+            await startAnalysis({
+                request: {
+                    contentDocumentId: this.contentDocumentId,
+                    contractName: this.reviewName,
+                    documentType: this.documentType,
+                    agency: this.agency,
+                    draftReviewId: this.recordId
+                }
+            });
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Re-run started',
+                message: 'Agentforce is analyzing the contract again.',
+                variant: 'success'
+            }));
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error',
+                message: error.body?.message || 'Re-run failed',
+                variant: 'error'
+            }));
         }
     }
 
