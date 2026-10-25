@@ -18,8 +18,25 @@ public with sharing class ContractIntakeController {
         @AuraEnabled public String extractionSource;
     }
 
+    /**
+     * Returns the user's most recent empty Draft, or creates one if none exists.
+     * Prevents a new record on every page load.
+     */
     @AuraEnabled
-    public static Id createDraftReview() {
+    public static Id getOrCreateDraft() {
+        List<Contract_Review__c> existing = [
+            SELECT Id
+            FROM Contract_Review__c
+            WHERE OwnerId = :UserInfo.getUserId()
+              AND Status__c = 'Draft'
+              AND ContentDocumentId__c = null
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        if (!existing.isEmpty()) {
+            return existing[0].Id;
+        }
+
         Contract_Review__c review = new Contract_Review__c(
             Name = 'Draft ' + Datetime.now().format('yyyy-MM-dd HH:mm'),
             Status__c = 'Draft'
@@ -226,6 +243,7 @@ public with sharing class ContractIntakeController {
         return [
             SELECT Id, Name, Document_Type__c, Agency__c, Status__c, Overall_Risk_Score__c, CreatedDate
             FROM Contract_Review__c
+            WHERE Status__c != 'Draft'
             ORDER BY CreatedDate DESC
             LIMIT 10
         ];
