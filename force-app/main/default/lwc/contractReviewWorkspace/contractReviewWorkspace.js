@@ -34,7 +34,10 @@ export default class ContractReviewWorkspace extends LightningElement {
     agency;
     findingsResult;
     findings = [];
+    selectedFindingId;
     selectedExcerpt = '';
+    selectedClauseType = '';
+    selectedRiskLevel = '';
 
     @wire(getRecord, { recordId: '$recordId', fields: REVIEW_FIELDS })
     wiredReview({ data }) {
@@ -64,6 +67,7 @@ export default class ContractReviewWorkspace extends LightningElement {
         if (result.data && result.data.records) {
             this.findings = result.data.records.map((rec) => {
                 const risk = rec.fields.Risk_Level__c?.value || 'Medium';
+                const isSelected = rec.id === this.selectedFindingId;
                 return {
                     id: rec.id,
                     clauseType: rec.fields.Clause_Type__c?.value || 'Clause',
@@ -72,11 +76,12 @@ export default class ContractReviewWorkspace extends LightningElement {
                     reviewStatus: rec.fields.Review_Status__c?.value,
                     overrideNote: rec.fields.Override_Note__c?.value,
                     riskClass: this.riskClass(risk),
-                    badgeClass: this.badgeClass(risk)
+                    badgeClass: this.badgeClass(risk),
+                    cardClass: isSelected ? this.riskClass(risk) + ' selected' : this.riskClass(risk)
                 };
             });
-            if (this.findings.length && !this.selectedExcerpt) {
-                this.selectedExcerpt = this.findings[0].excerpt;
+            if (this.findings.length && !this.selectedFindingId) {
+                this.selectFinding(this.findings[0]);
             }
         } else {
             this.findings = [];
@@ -85,6 +90,10 @@ export default class ContractReviewWorkspace extends LightningElement {
 
     get hasFindings() {
         return this.findings && this.findings.length > 0;
+    }
+
+    get selectedBadgeClass() {
+        return this.badgeClass(this.selectedRiskLevel || 'Medium');
     }
 
     get overallRiskLabel() {
@@ -113,11 +122,22 @@ export default class ContractReviewWorkspace extends LightningElement {
         return 'badge badge-medium';
     }
 
+    selectFinding(found) {
+        this.selectedFindingId = found.id;
+        this.selectedExcerpt = found.excerpt;
+        this.selectedClauseType = found.clauseType;
+        this.selectedRiskLevel = found.riskLevel;
+        this.findings = this.findings.map((f) => ({
+            ...f,
+            cardClass: f.id === found.id ? f.riskClass + ' selected' : f.riskClass
+        }));
+    }
+
     handleSelectFinding(event) {
         const id = event.currentTarget.dataset.id;
         const found = this.findings.find((f) => f.id === id);
         if (found) {
-            this.selectedExcerpt = found.excerpt;
+            this.selectFinding(found);
         }
     }
 
