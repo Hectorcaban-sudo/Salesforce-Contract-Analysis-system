@@ -14,6 +14,7 @@ public with sharing class ContractIntakeController {
         @AuraEnabled public String documentType;
         @AuraEnabled public String agency;
         @AuraEnabled public String notes;
+        @AuraEnabled public Id draftReviewId;
     }
 
     public class IntakeResult {
@@ -24,30 +25,67 @@ public with sharing class ContractIntakeController {
     }
 
     @AuraEnabled
+    public static Id createDraftReview() {
+        Contract_Review__c review = new Contract_Review__c(
+            Name = 'Draft ' + Datetime.now().format('yyyy-MM-dd HH:mm'),
+            Status__c = 'Draft'
+        );
+        insert review;
+        return review.Id;
+    }
+
+    @AuraEnabled
     public static IntakeResult startAnalysis(IntakeRequest request) {
         if (request == null || String.isBlank(request.contentDocumentId)) {
             throw new AuraHandledException('Upload a contract file before running analysis.');
         }
 
-        Contract_Review__c review = new Contract_Review__c(
-            Name = String.isNotBlank(request.contractName)
+        Contract_Review__c review;
+        if (request.draftReviewId != null) {
+            review = [
+                SELECT Id, Name, Status__c, Notes__c
+                FROM Contract_Review__c
+                WHERE Id = :request.draftReviewId
+                LIMIT 1
+            ];
+            review.Name = String.isNotBlank(request.contractName)
                 ? request.contractName
-                : 'Review ' + Datetime.now().format('yyyy-MM-dd HH:mm'),
-            Status__c = 'In Progress',
-            Document_Type__c = request.documentType,
-            Agency__c = request.agency,
-            Notes__c = request.notes,
-            ContentDocumentId__c = request.contentDocumentId
-        );
-        insert review;
+                : review.Name;
+        } else {
+            review = new Contract_Review__c(
+                Name = String.isNotBlank(request.contractName)
+                    ? request.contractName
+                    : 'Review ' + Datetime.now().format('yyyy-MM-dd HH:mm')
+            );
+        }
 
-        // Link the Salesforce File to the review record
-        insert new ContentDocumentLink(
-            ContentDocumentId = request.contentDocumentId,
-            LinkedEntityId = review.Id,
-            ShareType = 'V',
-            Visibility = 'AllUsers'
-        );
+        review.Status__c = 'In Progress';
+        review.Document_Type__c = request.documentType;
+        review.Agency__c = request.agency;
+        review.Notes__c = request.notes;
+        review.ContentDocumentId__c = request.contentDocumentId;
+
+        if (review.Id == null) {
+            insert review;
+        } else {
+            update review;
+        }
+
+        List<ContentDocumentLink> existing = [
+            SELECT Id
+            FROM ContentDocumentLink
+            WHERE ContentDocumentId = :request.contentDocumentId
+              AND LinkedEntityId = :review.Id
+            LIMIT 1
+        ];
+        if (existing.isEmpty()) {
+            insert new ContentDocumentLink(
+                ContentDocumentId = request.contentDocumentId,
+                LinkedEntityId = review.Id,
+                ShareType = 'V',
+                Visibility = 'AllUsers'
+            );
+        }
 
         IntakeResult result = new IntakeResult();
         result.reviewId = review.Id;
@@ -58,7 +96,7 @@ public with sharing class ContractIntakeController {
             '. Document type: ' + (request.documentType == null ? 'Unknown' : request.documentType) +
             '. Agency: ' + (request.agency == null ? 'Unknown' : request.agency) +
             '. Extract parties, governing law, key clauses, and risk findings. ' +
-            'Do not say you cannot process the file. Use the ContentDocumentId.' ;
+            'Do not say you cannot process the file. Use the ContentDocumentId.';
 
         try {
             Invocable.Action action = Invocable.Action.createCustomAction(
