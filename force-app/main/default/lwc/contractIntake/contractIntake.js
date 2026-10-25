@@ -70,6 +70,7 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
             if (!this.contractName) {
                 this.contractName = files[0].name;
             }
+            this.errorMessage = null;
         }
     }
 
@@ -79,18 +80,21 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
     handleNotesChange(e) { this.notes = e.target.value; }
 
     async handleRun() {
+        if (!this.contentDocumentId) {
+            this.errorMessage = 'Upload a contract file before running analysis.';
+            return;
+        }
+
         this.isRunning = true;
         this.errorMessage = null;
         try {
             const result = await startAnalysis({
-                request: {
-                    contentDocumentId: this.contentDocumentId,
-                    contractName: this.contractName,
-                    documentType: this.documentType,
-                    agency: this.agency,
-                    notes: this.notes,
-                    draftReviewId: this.draftRecordId
-                }
+                contentDocumentId: this.contentDocumentId,
+                contractName: this.contractName,
+                documentType: this.documentType,
+                agency: this.agency,
+                notes: this.notes,
+                draftReviewId: this.draftRecordId
             });
 
             if (result.errorMessage) {
