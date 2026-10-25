@@ -8,17 +8,7 @@ public with sharing class ContractIntakeController {
 
     private static final String AGENT_API_NAME = 'Contract_Analysis_Agent';
     private static final String PROMPT_TEMPLATE = 'Extract_Contract_Document';
-    // Change this to the Document AI schema / extraction template name you create in the org.
     private static final String DOCUMENT_AI_SCHEMA = 'Flexible_Contract_Schema';
-
-    public class IntakeRequest {
-        @AuraEnabled public String contentDocumentId;
-        @AuraEnabled public String contractName;
-        @AuraEnabled public String documentType;
-        @AuraEnabled public String agency;
-        @AuraEnabled public String notes;
-        @AuraEnabled public Id draftReviewId;
-    }
 
     public class IntakeResult {
         @AuraEnabled public Id reviewId;
@@ -39,21 +29,27 @@ public with sharing class ContractIntakeController {
     }
 
     @AuraEnabled
-    public static IntakeResult startAnalysis(IntakeRequest request) {
-        if (request == null || String.isBlank(request.contentDocumentId)) {
+    public static IntakeResult startAnalysis(
+        String contentDocumentId,
+        String contractName,
+        String documentType,
+        String agency,
+        String notes,
+        Id draftReviewId
+    ) {
+        if (String.isBlank(contentDocumentId)) {
             throw new AuraHandledException('Upload a contract file before running analysis.');
         }
 
-        Contract_Review__c review = upsertReview(request);
-        linkFile(request.contentDocumentId, review.Id);
+        Contract_Review__c review = upsertReview(contentDocumentId, contractName, documentType, agency, notes, draftReviewId);
+        linkFile(contentDocumentId, review.Id);
 
         IntakeResult result = new IntakeResult();
         result.reviewId = review.Id;
 
-        // 1) Document AI first, 2) prompt template fallback
-        ExtractionOutcome extraction = extractWithDocumentAi(request);
+        ExtractionOutcome extraction = extractWithDocumentAi(contentDocumentId, documentType);
         if (!extraction.success) {
-            extraction = extractWithPromptTemplate(request);
+            extraction = extractWithPromptTemplate(contentDocumentId, documentType);
         }
         result.extractionSource = extraction.source;
 
@@ -61,7 +57,7 @@ public with sharing class ContractIntakeController {
         review.Extraction_Json__c = extraction.jsonText;
         update review;
 
-        String userMessage = buildAgentMessage(request, review, extraction);
+        String userMessage = buildAgentMessage(contentDocumentId, documentType, agency, review, extraction);
 
         try {
             Invocable.Action action = Invocable.Action.createCustomAction(
@@ -97,31 +93,38 @@ public with sharing class ContractIntakeController {
         return result;
     }
 
-    private static Contract_Review__c upsertReview(IntakeRequest request) {
+    private static Contract_Review__c upsertReview(
+        String contentDocumentId,
+        String contractName,
+        String documentType,
+        String agency,
+        String notes,
+        Id draftReviewId
+    ) {
         Contract_Review__c review;
-        if (request.draftReviewId != null) {
+        if (draftReviewId != null) {
             review = [
                 SELECT Id, Name, Status__c, Notes__c
                 FROM Contract_Review__c
-                WHERE Id = :request.draftReviewId
+                WHERE Id = :draftReviewId
                 LIMIT 1
             ];
-            review.Name = String.isNotBlank(request.contractName)
-                ? request.contractName
+            review.Name = String.isNotBlank(contractName)
+                ? contractName
                 : review.Name;
         } else {
             review = new Contract_Review__c(
-                Name = String.isNotBlank(request.contractName)
-                    ? request.contractName
+                Name = String.isNotBlank(contractName)
+                    ? contractName
                     : 'Review ' + Datetime.now().format('yyyy-MM-dd HH:mm')
             );
         }
 
         review.Status__c = 'In Progress';
-        review.Document_Type__c = request.documentType;
-        review.Agency__c = request.agency;
-        review.Notes__c = request.notes;
-        review.ContentDocumentId__c = request.contentDocumentId;
+        review.Document_Type__c = documentType;
+        review.Agency__c = agency;
+        review.Notes__c = notes;
+        review.ContentDocumentId__c = contentDocumentId;
 
         if (review.Id == null) {
             insert review;
@@ -149,35 +152,15 @@ public with sharing class ContractIntakeController {
         }
     }
 
-    /**
-     * Document AI path.
-     * Wire this to your org's Document AI / Contracts AI extraction once the schema is created.
-     * Until the schema exists, this returns unsuccessful and the prompt template runs.
-     */
-    private static ExtractionOutcome extractWithDocumentAi(IntakeRequest request) {
+    private static ExtractionOutcome extractWithDocumentAi(String contentDocumentId, String documentType) {
         ExtractionOutcome outcome = new ExtractionOutcome();
         outcome.source = 'Document AI';
-        try {
-            // Placeholder: replace with the Document AI / Contracts AI invocable or Connect API
-            // call for schema DOCUMENT_AI_SCHEMA once it is configured in the org.
-            // Example shape once wired:
-            //   Invocable.Action action = Invocable.Action.createStandardAction('documentAiExtract');
-            //   action.setInvocationParameter('contentDocumentId', request.contentDocumentId);
-            //   action.setInvocationParameter('schemaName', DOCUMENT_AI_SCHEMA);
-            //   ...
-            //
-            // Until that call is wired, treat Document AI as not yet available so the
-            // prompt template fallback runs.
-            outcome.success = false;
-            outcome.jsonText = 'Document AI schema "' + DOCUMENT_AI_SCHEMA + '" not yet wired in Apex.';
-        } catch (Exception e) {
-            outcome.success = false;
-            outcome.jsonText = 'Document AI error: ' + e.getMessage();
-        }
+        outcome.success = false;
+        outcome.jsonText = 'Document AI schema "' + DOCUMENT_AI_SCHEMA + '" not yet wired in Apex.';
         return outcome;
     }
 
-    private static ExtractionOutcome extractWithPromptTemplate(IntakeRequest request) {
+    private static ExtractionOutcome extractWithPromptTemplate(String contentDocumentId, String documentType) {
         ExtractionOutcome outcome = new ExtractionOutcome();
         outcome.source = 'Prompt Template';
         try {
@@ -187,11 +170,11 @@ public with sharing class ContractIntakeController {
             Map<String, ConnectApi.WrappedValue> params = new Map<String, ConnectApi.WrappedValue>();
 
             ConnectApi.WrappedValue fileParam = new ConnectApi.WrappedValue();
-            fileParam.value = request.contentDocumentId;
+            fileParam.value = contentDocumentId;
             params.put('Input:InputFile', fileParam);
 
             ConnectApi.WrappedValue typeParam = new ConnectApi.WrappedValue();
-            typeParam.value = request.documentType;
+            typeParam.value = documentType;
             params.put('Input:TemplateName', typeParam);
 
             input.inputParams = params;
@@ -216,12 +199,18 @@ public with sharing class ContractIntakeController {
         return outcome;
     }
 
-    private static String buildAgentMessage(IntakeRequest request, Contract_Review__c review, ExtractionOutcome extraction) {
+    private static String buildAgentMessage(
+        String contentDocumentId,
+        String documentType,
+        String agency,
+        Contract_Review__c review,
+        ExtractionOutcome extraction
+    ) {
         return
-            'Analyze this contract. ContentDocumentId: ' + request.contentDocumentId +
+            'Analyze this contract. ContentDocumentId: ' + contentDocumentId +
             '. Review record Id: ' + review.Id +
-            '. Document type: ' + (request.documentType == null ? 'Unknown' : request.documentType) +
-            '. Agency: ' + (request.agency == null ? 'Unknown' : request.agency) +
+            '. Document type: ' + (documentType == null ? 'Unknown' : documentType) +
+            '. Agency: ' + (agency == null ? 'Unknown' : agency) +
             '. Extraction source: ' + extraction.source +
             '. Extracted JSON: ' + (extraction.jsonText == null ? '' : extraction.jsonText.abbreviate(12000)) +
             '. Compare clauses to the playbook and taxonomy. Create findings. ' +
