@@ -1,0 +1,85 @@
+<template>
+    <div class="intake">
+        <div class="header">
+            <div>
+                <h1>New Contract Review</h1>
+                <p class="subtitle">Upload a contract. Analysis runs through Agentforce. Results open in the Contract Review Workspace.</p>
+            </div>
+        </div>
+
+        <div class="body">
+            <section class="form-card">
+                <lightning-file-upload
+                    label="Upload Contract (PDF or DOCX)"
+                    name="contractFile"
+                    accept=".pdf,.docx,.doc,.txt"
+                    record-id={draftRecordId}
+                    onuploadfinished={handleUploadFinished}>
+                </lightning-file-upload>
+                <template if:true={fileName}>
+                    <p class="file-ok">Attached: {fileName}</p>
+                </template>
+
+                <lightning-input
+                    label="Contract Name"
+                    value={contractName}
+                    onchange={handleNameChange}
+                    class="slds-m-top_small">
+                </lightning-input>
+
+                <lightning-combobox
+                    label="Document Type"
+                    value={documentType}
+                    options={typeOptions}
+                    onchange={handleTypeChange}
+                    class="slds-m-top_small">
+                </lightning-combobox>
+
+                <lightning-input
+                    label="Agency or Vehicle"
+                    value={agency}
+                    onchange={handleAgencyChange}
+                    class="slds-m-top_small">
+                </lightning-input>
+
+                <lightning-textarea
+                    label="Notes"
+                    value={notes}
+                    onchange={handleNotesChange}
+                    class="slds-m-top_small">
+                </lightning-textarea>
+
+                <div class="actions">
+                    <lightning-button
+                        label="Upload &amp; Run Analysis"
+                        variant="brand"
+                        onclick={handleRun}
+                        disabled={isRunDisabled}>
+                    </lightning-button>
+                </div>
+                <p class="hint">Analysis runs through Agentforce. You will be taken to the Contract Review Workspace.</p>
+                <template if:true={errorMessage}>
+                    <p class="error">{errorMessage}</p>
+                </template>
+            </section>
+
+            <section class="recent">
+                <h2>Recent Reviews</h2>
+                <template if:true={hasRecent}>
+                    <ul>
+                        <template for:each={recentReviews} for:item="review">
+                            <li key={review.Id}>
+                                <a href={review.url}>{review.Name}</a>
+                                <span class="pill">{review.Status__c}</span>
+                                <span class="meta">{review.Document_Type__c} · {review.Agency__c}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template if:false={hasRecent}>
+                    <p class="hint">No reviews yet.</p>
+                </template>
+            </section>
+        </div>
+    </div>
+</template>

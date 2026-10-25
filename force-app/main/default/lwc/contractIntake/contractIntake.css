@@ -1,0 +1,14 @@
+.intake { background: #f3f3f3; min-height: 100%; padding: 1rem; }
+.header h1 { margin: 0; font-size: 1.5rem; }
+.subtitle { color: #706e6b; margin: 0.25rem 0 1rem; }
+.body { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+.form-card, .recent { background: #fff; border: 1px solid #dddbda; border-radius: 0.5rem; padding: 1rem; }
+.actions { margin-top: 1rem; }
+.hint { color: #706e6b; font-size: 0.8rem; margin-top: 0.5rem; }
+.file-ok { color: #2e844a; font-weight: 600; }
+.error { color: #c23934; margin-top: 0.5rem; }
+.recent ul { list-style: none; padding: 0; margin: 0; }
+.recent li { padding: 0.5rem 0; border-bottom: 1px solid #ecebea; }
+.pill { background: #eef4ff; color: #014486; border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem; }
+.meta { display: block; color: #706e6b; font-size: 0.75rem; }
+@media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
