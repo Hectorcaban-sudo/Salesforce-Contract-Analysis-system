@@ -11,14 +11,17 @@
                     <span class="label">{overallRiskLabel}</span>
                 </div>
                 <div class="status-pill">{status}</div>
+                <lightning-button label="Re-run Analysis" onclick={handleRerun} variant="neutral"></lightning-button>
             </div>
         </div>
 
         <div class="panes">
-            <!-- Document Viewer -->
             <section class="pane document-pane">
                 <div class="pane-header">Document Viewer</div>
                 <div class="document-body">
+                    <template if:true={pdfUrl}>
+                        <iframe class="pdf-frame" src={pdfUrl} title="Contract PDF"></iframe>
+                    </template>
                     <template if:true={selectedExcerpt}>
                         <p class="doc-label">Selected clause excerpt</p>
                         <div class="highlight">{selectedExcerpt}</div>
@@ -26,11 +29,9 @@
                     <template if:false={selectedExcerpt}>
                         <p class="empty">Upload a contract and run analysis. Clause excerpts will appear here when you select a finding.</p>
                     </template>
-                    <p class="hint">Starter viewer — wire a PDF component or ContentVersion preview for full document highlighting.</p>
                 </div>
             </section>
 
-            <!-- AI Findings -->
             <section class="pane findings-pane">
                 <div class="pane-header">AI Findings</div>
                 <template if:true={hasFindings}>
@@ -61,9 +62,9 @@
                     </template>
                 </template>
                 <template if:false={hasFindings}>
-                    <p class="empty">No findings yet. Run analysis from the agent.</p>
+                    <p class="empty">No findings yet. Analysis may still be running, or the agent did not return structured findings.</p>
                 </template>
-                <p class="footer-hint">AI findings are suggestions. Please review and take action.</p>
+                <p class="footer-hint">AI findings are suggestions. Lawyers retain accountability.</p>
             </section>
         </div>
     </div>
