@@ -23,8 +23,14 @@
                         <iframe class="pdf-frame" src={pdfUrl} title="Contract PDF"></iframe>
                     </template>
                     <template if:true={selectedExcerpt}>
-                        <p class="doc-label">Selected clause excerpt</p>
-                        <div class="highlight">{selectedExcerpt}</div>
+                        <div class="clause-highlight">
+                            <div class="clause-highlight-header">
+                                <span class="highlight-label">Highlighted clause</span>
+                                <span class={selectedBadgeClass}>{selectedClauseType}</span>
+                            </div>
+                            <p class="highlight-text">{selectedExcerpt}</p>
+                            <p class="doc-label">Selected finding highlighted. Click another finding to jump to its clause.</p>
+                        </div>
                     </template>
                     <template if:false={selectedExcerpt}>
                         <p class="empty">Upload a contract and run analysis. Clause excerpts will appear here when you select a finding.</p>
@@ -36,7 +42,7 @@
                 <div class="pane-header">AI Findings</div>
                 <template if:true={hasFindings}>
                     <template for:each={findings} for:item="finding">
-                        <article key={finding.id} class={finding.riskClass} data-id={finding.id} onclick={handleSelectFinding}>
+                        <article key={finding.id} class={finding.cardClass} data-id={finding.id} onclick={handleSelectFinding}>
                             <div class="card-header">
                                 <h3>{finding.clauseType}</h3>
                                 <span class={finding.badgeClass}>{finding.riskLevel}</span>
