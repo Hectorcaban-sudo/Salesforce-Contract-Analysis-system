@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Flexible Contract Schema",
+  "description": "One schema for base contracts, mods, subcontract mods, and task orders. Use this as the starting Document AI schema. Add a second schema only if mods fail often.",
+  "type": "object",
+  "properties": {
+    "documentType": {
+      "type": "string",
+      "description": "Base Contract, Modification, Subcontract Mod, Task Order, NDA, MSA, SaaS, Government Contract, or Other"
+    },
+    "contractNumber": {
+      "type": "string",
+      "description": "Contract, award, or vehicle number"
+    },
+    "modNumber": {
+      "type": "string",
+      "description": "Modification or subcontract mod number if present"
+    },
+    "agencyOrVehicle": {
+      "type": "string",
+      "description": "Agency, customer, or vehicle name"
+    },
+    "parties": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Contracting parties"
+    },
+    "effectiveDate": {
+      "type": "string",
+      "description": "Effective date in YYYY-MM-DD if present"
+    },
+    "expirationDate": {
+      "type": "string",
+      "description": "Expiration or end date in YYYY-MM-DD if present"
+    },
+    "governingLaw": {
+      "type": "string",
+      "description": "Governing law or jurisdiction"
+    },
+    "clauses": {
+      "type": "array",
+      "description": "Key clauses found in the document",
+      "items": {
+        "type": "object",
+        "properties": {
+          "clauseType": {
+            "type": "string",
+            "description": "Liability Limitation, Indemnification, Termination, Governing Law, Confidentiality, Data Protection, Intellectual Property, Assignment, Force Majeure, Audit Rights, Limitation of Remedies, Payment Terms, Warranty, Non-Solicitation, or Other"
+          },
+          "section": {
+            "type": "string",
+            "description": "Section or clause number if present"
+          },
+          "excerpt": {
+            "type": "string",
+            "description": "Exact or closely matching text span"
+          }
+        }
+      }
+    }
+  }
+}
