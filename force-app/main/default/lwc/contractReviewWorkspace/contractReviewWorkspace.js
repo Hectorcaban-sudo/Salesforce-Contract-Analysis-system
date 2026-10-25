@@ -152,13 +152,12 @@ export default class ContractReviewWorkspace extends LightningElement {
         }
         try {
             await startAnalysis({
-                request: {
-                    contentDocumentId: this.contentDocumentId,
-                    contractName: this.reviewName,
-                    documentType: this.documentType,
-                    agency: this.agency,
-                    draftReviewId: this.recordId
-                }
+                contentDocumentId: this.contentDocumentId,
+                contractName: this.reviewName,
+                documentType: this.documentType,
+                agency: this.agency,
+                notes: null,
+                draftReviewId: this.recordId
             });
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Re-run started',
