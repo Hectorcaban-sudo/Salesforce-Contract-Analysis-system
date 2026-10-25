@@ -2,7 +2,7 @@ import { LightningElement, api, wire } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { getRelatedListRecords } from 'lightning/uiRelatedListApi';
 import captureOverride from '@salesforce/apex/CaptureOverrideAction.captureOverrideAura';
-import startAnalysis from '@salesforce/apex/ContractIntakeController.startAnalysis';
+import runAnalysis from '@salesforce/apex/ContractIntakeController.runAnalysis';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -38,6 +38,7 @@ export default class ContractReviewWorkspace extends LightningElement {
     selectedExcerpt = '';
     selectedClauseType = '';
     selectedRiskLevel = '';
+    isRerunning = false;
 
     @wire(getRecord, { recordId: '$recordId', fields: REVIEW_FIELDS })
     wiredReview({ data }) {
@@ -150,26 +151,31 @@ export default class ContractReviewWorkspace extends LightningElement {
             }));
             return;
         }
+        this.isRerunning = true;
         try {
-            await startAnalysis({
-                contentDocumentId: this.contentDocumentId,
-                contractName: this.reviewName,
-                documentType: this.documentType,
-                agency: this.agency,
-                notes: null,
-                draftReviewId: this.recordId
-            });
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Re-run started',
-                message: 'Agentforce is analyzing the contract again.',
-                variant: 'success'
-            }));
+            const result = await runAnalysis({ reviewId: this.recordId });
+            if (result.errorMessage) {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Re-run finished with warnings',
+                    message: result.errorMessage,
+                    variant: 'warning'
+                }));
+            } else {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Re-run complete',
+                    message: 'Agentforce finished. Refresh to see findings.',
+                    variant: 'success'
+                }));
+            }
+            await refreshApex(this.findingsResult);
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error',
                 message: error.body?.message || 'Re-run failed',
                 variant: 'error'
             }));
+        } finally {
+            this.isRerunning = false;
         }
     }
 
