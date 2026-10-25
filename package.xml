@@ -13,6 +13,7 @@
         <members>ExtractContractAction</members>
         <members>IntelligentContextRetrievalAction</members>
         <members>PresentFindingsInUIAction</members>
+        <members>ContractIntakeController</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -29,7 +30,12 @@
     <types>
         <members>contractFindingsPanel</members>
         <members>contractReviewWorkspace</members>
+        <members>contractIntake</members>
         <name>LightningComponentBundle</name>
     </types>
-    <version>64.0</version>
+    <types>
+        <members>Contract_Intake_Page</members>
+        <name>FlexiPage</name>
+    </types>
+    <version>68.0</version>
 </Package>
