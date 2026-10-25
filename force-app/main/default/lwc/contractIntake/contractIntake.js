@@ -2,6 +2,7 @@ import { LightningElement, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import startAnalysis from '@salesforce/apex/ContractIntakeController.startAnalysis';
+import createDraftReview from '@salesforce/apex/ContractIntakeController.createDraftReview';
 import getRecentReviews from '@salesforce/apex/ContractIntakeController.getRecentReviews';
 import { refreshApex } from '@salesforce/apex';
 
@@ -16,9 +17,6 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
     errorMessage;
     recentResult;
     recentReviews = [];
-
-    // Placeholder so lightning-file-upload can attach before the review exists.
-    // The controller re-links the file to the Contract_Review__c after insert.
     draftRecordId;
 
     typeOptions = [
@@ -32,6 +30,18 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
         { label: 'SaaS', value: 'SaaS' },
         { label: 'Other', value: 'Other' }
     ];
+
+    connectedCallback() {
+        this.ensureDraft();
+    }
+
+    async ensureDraft() {
+        try {
+            this.draftRecordId = await createDraftReview();
+        } catch (error) {
+            this.errorMessage = error.body?.message || 'Could not prepare upload';
+        }
+    }
 
     @wire(getRecentReviews)
     wiredRecent(result) {
@@ -78,7 +88,8 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
                     contractName: this.contractName,
                     documentType: this.documentType,
                     agency: this.agency,
-                    notes: this.notes
+                    notes: this.notes,
+                    draftReviewId: this.draftRecordId
                 }
             });
 
