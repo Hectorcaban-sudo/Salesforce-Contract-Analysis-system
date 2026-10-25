@@ -2,7 +2,7 @@ import { LightningElement, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import startAnalysis from '@salesforce/apex/ContractIntakeController.startAnalysis';
-import createDraftReview from '@salesforce/apex/ContractIntakeController.createDraftReview';
+import getOrCreateDraft from '@salesforce/apex/ContractIntakeController.getOrCreateDraft';
 import getRecentReviews from '@salesforce/apex/ContractIntakeController.getRecentReviews';
 import { refreshApex } from '@salesforce/apex';
 
@@ -37,7 +37,7 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
 
     async ensureDraft() {
         try {
-            this.draftRecordId = await createDraftReview();
+            this.draftRecordId = await getOrCreateDraft();
         } catch (error) {
             this.errorMessage = error.body?.message || 'Could not prepare upload';
         }
