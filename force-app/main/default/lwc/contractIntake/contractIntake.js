@@ -2,6 +2,7 @@ import { LightningElement, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import startAnalysis from '@salesforce/apex/ContractIntakeController.startAnalysis';
+import runAnalysis from '@salesforce/apex/ContractIntakeController.runAnalysis';
 import getOrCreateDraft from '@salesforce/apex/ContractIntakeController.getOrCreateDraft';
 import getRecentReviews from '@salesforce/apex/ContractIntakeController.getRecentReviews';
 import { refreshApex } from '@salesforce/apex';
@@ -88,7 +89,7 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
         this.isRunning = true;
         this.errorMessage = null;
         try {
-            const result = await startAnalysis({
+            const created = await startAnalysis({
                 contentDocumentId: this.contentDocumentId,
                 contractName: this.contractName,
                 documentType: this.documentType,
@@ -96,6 +97,8 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
                 notes: this.notes,
                 draftReviewId: this.draftRecordId
             });
+
+            const result = await runAnalysis({ reviewId: created.reviewId });
 
             if (result.errorMessage) {
                 this.errorMessage = result.errorMessage;
