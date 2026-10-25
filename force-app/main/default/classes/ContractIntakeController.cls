@@ -66,7 +66,7 @@ public with sharing class ContractIntakeController {
     }
 
     /**
-     * Callouts only. Extracts and invokes the agent. Safe to re-run on Error records.
+     * Callouts first, then one DML. Safe to re-run on Error records.
      */
     @AuraEnabled
     public static IntakeResult runAnalysis(Id reviewId) {
@@ -90,12 +90,8 @@ public with sharing class ContractIntakeController {
         }
         result.extractionSource = extraction.source;
 
-        review.Extraction_Source__c = extraction.source;
-        review.Extraction_Json__c = extraction.jsonText;
-        review.Status__c = 'In Progress';
-        update review;
-
         String userMessage = buildAgentMessage(review, extraction);
+        String agentError;
 
         try {
             Invocable.Action action = Invocable.Action.createCustomAction(
@@ -110,23 +106,26 @@ public with sharing class ContractIntakeController {
             if (!results.isEmpty() && results[0].isSuccess()) {
                 result.agentResponse = String.valueOf(results[0].getOutputParameters().get('agentResponse'));
                 result.sessionId = String.valueOf(results[0].getOutputParameters().get('sessionId'));
-                review.Status__c = 'Ready for Review';
-                update review;
             } else {
-                String err = results.isEmpty()
+                agentError = results.isEmpty()
                     ? 'No response from agent'
                     : String.valueOf(results[0].getErrors());
-                result.errorMessage = err;
-                review.Status__c = 'Error';
-                review.Notes__c = appendNote(review.Notes__c, 'Agent error: ' + err);
-                update review;
+                result.errorMessage = agentError;
             }
         } catch (Exception e) {
-            result.errorMessage = e.getMessage();
-            review.Status__c = 'Error';
-            review.Notes__c = appendNote(review.Notes__c, 'Agent error: ' + e.getMessage());
-            update review;
+            agentError = e.getMessage();
+            result.errorMessage = agentError;
         }
+
+        review.Extraction_Source__c = extraction.source;
+        review.Extraction_Json__c = extraction.jsonText;
+        if (agentError == null) {
+            review.Status__c = 'Ready for Review';
+        } else {
+            review.Status__c = 'Error';
+            review.Notes__c = appendNote(review.Notes__c, 'Agent error: ' + agentError);
+        }
+        update review;
 
         return result;
     }
