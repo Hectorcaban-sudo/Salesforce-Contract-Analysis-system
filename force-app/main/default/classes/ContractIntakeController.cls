@@ -154,7 +154,7 @@ public with sharing class ContractIntakeController {
                 Clause_Type__c = clauseType.abbreviate(255),
                 Risk_Level__c = risk,
                 Excerpt__c = excerpt.abbreviate(32000),
-                Review_Status__c = 'Not Reviewed'
+                Review_Status__c = 'Pending'
             ));
         }
 
@@ -164,7 +164,7 @@ public with sharing class ContractIntakeController {
                 Clause_Type__c = 'Agent Response',
                 Risk_Level__c = 'Medium',
                 Excerpt__c = agentResponse.abbreviate(32000),
-                Review_Status__c = 'Not Reviewed'
+                Review_Status__c = 'Pending'
             ));
         }
         insert toInsert;
