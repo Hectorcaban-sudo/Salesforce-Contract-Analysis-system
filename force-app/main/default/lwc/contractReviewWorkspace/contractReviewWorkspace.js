@@ -1,9 +1,9 @@
 import { LightningElement, api, wire } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
-import { getRelatedListRecords } from 'lightning/uiRelatedListApi';
 import { NavigationMixin } from 'lightning/navigation';
 import captureOverride from '@salesforce/apex/CaptureOverrideAction.captureOverrideAura';
 import runAnalysis from '@salesforce/apex/ContractIntakeController.runAnalysis';
+import getFindings from '@salesforce/apex/ContractIntakeController.getFindings';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
@@ -15,15 +15,6 @@ const REVIEW_FIELDS = [
     'Contract_Review__c.Document_Type__c',
     'Contract_Review__c.Agency__c',
     'Contract_Review__c.Agent_Response__c'
-];
-
-const FINDING_FIELDS = [
-    'Contract_Finding__c.Id',
-    'Contract_Finding__c.Clause_Type__c',
-    'Contract_Finding__c.Risk_Level__c',
-    'Contract_Finding__c.Excerpt__c',
-    'Contract_Finding__c.Review_Status__c',
-    'Contract_Finding__c.Override_Note__c'
 ];
 
 export default class ContractReviewWorkspace extends NavigationMixin(LightningElement) {
@@ -60,24 +51,20 @@ export default class ContractReviewWorkspace extends NavigationMixin(LightningEl
         return !!this.contentDocumentId;
     }
 
-    @wire(getRelatedListRecords, {
-        parentRecordId: '$recordId',
-        relatedListId: 'Findings__r',
-        fields: FINDING_FIELDS
-    })
+    @wire(getFindings, { reviewId: '$recordId' })
     wiredFindings(result) {
         this.findingsResult = result;
-        if (result.data && result.data.records) {
-            this.findings = result.data.records.map((rec) => {
-                const risk = rec.fields.Risk_Level__c?.value || 'Medium';
-                const isSelected = rec.id === this.selectedFindingId;
+        if (result.data) {
+            this.findings = result.data.map((rec) => {
+                const risk = rec.Risk_Level__c || 'Medium';
+                const isSelected = rec.Id === this.selectedFindingId;
                 return {
-                    id: rec.id,
-                    clauseType: rec.fields.Clause_Type__c?.value || 'Clause',
+                    id: rec.Id,
+                    clauseType: rec.Clause_Type__c || 'Clause',
                     riskLevel: risk,
-                    excerpt: rec.fields.Excerpt__c?.value || '',
-                    reviewStatus: rec.fields.Review_Status__c?.value,
-                    overrideNote: rec.fields.Override_Note__c?.value,
+                    excerpt: rec.Excerpt__c || '',
+                    reviewStatus: rec.Review_Status__c,
+                    overrideNote: rec.Override_Note__c,
                     riskClass: this.riskClass(risk),
                     badgeClass: this.badgeClass(risk),
                     cardClass: isSelected ? this.riskClass(risk) + ' selected' : this.riskClass(risk)
@@ -180,7 +167,7 @@ export default class ContractReviewWorkspace extends NavigationMixin(LightningEl
             } else {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Re-run complete',
-                    message: 'Findings created. Refresh the page if they do not appear.',
+                    message: 'Findings created.',
                     variant: 'success'
                 }));
             }
