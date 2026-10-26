@@ -1,5 +1,15 @@
 <template>
     <div class="workspace">
+        <template if:true={isRerunning}>
+            <div class="wait-overlay">
+                <div class="wait-card">
+                    <lightning-spinner alternative-text="Analyzing" size="medium"></lightning-spinner>
+                    <h2>Analyzing contract</h2>
+                    <p>Agentforce is reviewing the document. This can take a minute. Please wait.</p>
+                </div>
+            </div>
+        </template>
+
         <div class="header">
             <div>
                 <h1 class="title">{reviewName}</h1>
@@ -11,7 +21,7 @@
                     <span class="label">{overallRiskLabel}</span>
                 </div>
                 <div class="status-pill">{status}</div>
-                <lightning-button label="Re-run Analysis" onclick={handleRerun} variant="neutral"></lightning-button>
+                <lightning-button label="Re-run Analysis" onclick={handleRerun} variant="neutral" disabled={isRerunning}></lightning-button>
             </div>
         </div>
 
