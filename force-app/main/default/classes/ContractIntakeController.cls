@@ -125,6 +125,16 @@ public with sharing class ContractIntakeController {
         return result;
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<Contract_Finding__c> getFindings(Id reviewId) {
+        return [
+            SELECT Id, Clause_Type__c, Risk_Level__c, Excerpt__c, Review_Status__c, Override_Note__c
+            FROM Contract_Finding__c
+            WHERE Contract_Review__c = :reviewId
+            ORDER BY CreatedDate ASC
+        ];
+    }
+
     private static void persistFindings(Id reviewId, String agentResponse) {
         if (String.isBlank(agentResponse)) {
             return;
