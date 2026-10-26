@@ -143,7 +143,7 @@ public with sharing class ContractIntakeController {
         delete [SELECT Id FROM Contract_Finding__c WHERE Contract_Review__c = :reviewId];
 
         List<Contract_Finding__c> toInsert = new List<Contract_Finding__c>();
-        Pattern block = Pattern.compile('(?i)Clause Type:\s*(.+?)\s*Risk Level:\s*(.+?)\s*Excerpt:\s*"?(.+?)"?(?=\s*Clause Type:|\s*Overall Risk Score:|$)');
+        Pattern block = Pattern.compile('(?i)Clause Type:\\s*(.+?)\\s*Risk Level:\\s*(.+?)\\s*Excerpt:\\s*"?(.+?)"?(?=\\s*Clause Type:|\\s*Overall Risk Score:|$)');
         Matcher m = block.matcher(agentResponse);
         while (m.find()) {
             String clauseType = m.group(1).trim();
@@ -169,7 +169,7 @@ public with sharing class ContractIntakeController {
         }
         insert toInsert;
 
-        Matcher scoreMatch = Pattern.compile('(?i)Overall Risk Score:\s*(\d+)').matcher(agentResponse);
+        Matcher scoreMatch = Pattern.compile('(?i)Overall Risk Score:\\s*(\\d+)').matcher(agentResponse);
         if (scoreMatch.find()) {
             update new Contract_Review__c(
                 Id = reviewId,
