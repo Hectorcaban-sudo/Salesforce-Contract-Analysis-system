@@ -54,7 +54,7 @@ export default class ContractReviewWorkspace extends LightningElement {
 
     get pdfUrl() {
         return this.contentDocumentId
-            ? `/sfc/servlet.shepherd/document/download/${this.contentDocumentId}`
+            ? `/sfc/servlet.shepherd/document/download/${this.contentDocumentId}#toolbar=1`
             : null;
     }
 
@@ -163,7 +163,7 @@ export default class ContractReviewWorkspace extends LightningElement {
             } else {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Re-run complete',
-                    message: 'Agentforce finished. Refresh to see findings.',
+                    message: 'Findings created. Refresh the page if they do not appear.',
                     variant: 'success'
                 }));
             }
