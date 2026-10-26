@@ -19,8 +19,11 @@
             <section class="pane document-pane">
                 <div class="pane-header">Document Viewer</div>
                 <div class="document-body">
-                    <template if:true={pdfUrl}>
-                        <iframe class="pdf-frame" src={pdfUrl} title="Contract PDF"></iframe>
+                    <template if:true={hasFile}>
+                        <div class="doc-actions">
+                            <lightning-button label="Open Document" onclick={handleOpenDocument} variant="brand"></lightning-button>
+                            <p class="doc-label">Opens the contract in Salesforce preview. Does not download.</p>
+                        </div>
                     </template>
                     <template if:true={selectedExcerpt}>
                         <div class="clause-highlight">
@@ -29,11 +32,11 @@
                                 <span class={selectedBadgeClass}>{selectedClauseType}</span>
                             </div>
                             <p class="highlight-text">{selectedExcerpt}</p>
-                            <p class="doc-label">Selected finding highlighted. Click another finding to jump to its clause.</p>
+                            <p class="doc-label">Selected finding. Click another finding to switch.</p>
                         </div>
                     </template>
                     <template if:false={selectedExcerpt}>
-                        <p class="empty">Upload a contract and run analysis. Clause excerpts will appear here when you select a finding.</p>
+                        <p class="empty">No clause selected. Findings appear on the right after analysis.</p>
                     </template>
                 </div>
             </section>
@@ -68,7 +71,13 @@
                     </template>
                 </template>
                 <template if:false={hasFindings}>
-                    <p class="empty">No findings yet. Analysis may still be running, or the agent did not return structured findings.</p>
+                    <p class="empty">No findings yet. Click Re-run Analysis, then refresh if they do not appear.</p>
+                    <template if:true={agentResponse}>
+                        <div class="clause-highlight">
+                            <p class="highlight-label">Agent response</p>
+                            <p class="highlight-text">{agentResponse}</p>
+                        </div>
+                    </template>
                 </template>
                 <p class="footer-hint">AI findings are suggestions. Lawyers retain accountability.</p>
             </section>
