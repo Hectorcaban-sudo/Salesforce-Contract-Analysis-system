@@ -40,10 +40,6 @@ public with sharing class ContractIntakeController {
         return review.Id;
     }
 
-    /**
-     * DML only. Creates or updates the review and links the file.
-     * Call runAnalysis in a second request to invoke Agentforce.
-     */
     @AuraEnabled
     public static IntakeResult startAnalysis(
         String contentDocumentId,
@@ -65,9 +61,6 @@ public with sharing class ContractIntakeController {
         return result;
     }
 
-    /**
-     * Callouts first, then one DML. Safe to re-run on Error records.
-     */
     @AuraEnabled
     public static IntakeResult runAnalysis(Id reviewId) {
         Contract_Review__c review = [
@@ -119,8 +112,10 @@ public with sharing class ContractIntakeController {
 
         review.Extraction_Source__c = extraction.source;
         review.Extraction_Json__c = extraction.jsonText;
+        review.Agent_Response__c = result.agentResponse;
         if (agentError == null) {
             review.Status__c = 'Ready for Review';
+            persistFindings(review.Id, result.agentResponse);
         } else {
             review.Status__c = 'Error';
             review.Notes__c = appendNote(review.Notes__c, 'Agent error: ' + agentError);
@@ -128,6 +123,57 @@ public with sharing class ContractIntakeController {
         update review;
 
         return result;
+    }
+
+    private static void persistFindings(Id reviewId, String agentResponse) {
+        if (String.isBlank(agentResponse)) {
+            return;
+        }
+
+        delete [SELECT Id FROM Contract_Finding__c WHERE Contract_Review__c = :reviewId];
+
+        List<Contract_Finding__c> toInsert = new List<Contract_Finding__c>();
+        Pattern block = Pattern.compile('(?i)Clause Type:\s*(.+?)\s*Risk Level:\s*(.+?)\s*Excerpt:\s*"?(.+?)"?(?=\s*Clause Type:|\s*Overall Risk Score:|$)');
+        Matcher m = block.matcher(agentResponse);
+        while (m.find()) {
+            String clauseType = m.group(1).trim();
+            String risk = normalizeRisk(m.group(2));
+            String excerpt = m.group(3).trim();
+            toInsert.add(new Contract_Finding__c(
+                Contract_Review__c = reviewId,
+                Clause_Type__c = clauseType.abbreviate(255),
+                Risk_Level__c = risk,
+                Excerpt__c = excerpt.abbreviate(32000),
+                Review_Status__c = 'Not Reviewed'
+            ));
+        }
+
+        if (toInsert.isEmpty()) {
+            toInsert.add(new Contract_Finding__c(
+                Contract_Review__c = reviewId,
+                Clause_Type__c = 'Agent Response',
+                Risk_Level__c = 'Medium',
+                Excerpt__c = agentResponse.abbreviate(32000),
+                Review_Status__c = 'Not Reviewed'
+            ));
+        }
+        insert toInsert;
+
+        Matcher scoreMatch = Pattern.compile('(?i)Overall Risk Score:\s*(\d+)').matcher(agentResponse);
+        if (scoreMatch.find()) {
+            update new Contract_Review__c(
+                Id = reviewId,
+                Overall_Risk_Score__c = Decimal.valueOf(scoreMatch.group(1))
+            );
+        }
+    }
+
+    private static String normalizeRisk(String raw) {
+        if (raw == null) return 'Medium';
+        String v = raw.toLowerCase();
+        if (v.contains('high')) return 'High';
+        if (v.contains('low')) return 'Low';
+        return 'Medium';
     }
 
     private static Contract_Review__c upsertReview(
@@ -207,12 +253,17 @@ public with sharing class ContractIntakeController {
             Map<String, ConnectApi.WrappedValue> params = new Map<String, ConnectApi.WrappedValue>();
 
             ConnectApi.WrappedValue fileParam = new ConnectApi.WrappedValue();
-            fileParam.value = contentDocumentId;
+            fileParam.value = new Map<String, String>{
+                'id' => contentDocumentId,
+                'type' => 'ContentDocument'
+            };
             params.put('Input:InputFile', fileParam);
 
-            ConnectApi.WrappedValue typeParam = new ConnectApi.WrappedValue();
-            typeParam.value = documentType;
-            params.put('Input:TemplateName', typeParam);
+            if (String.isNotBlank(documentType)) {
+                ConnectApi.WrappedValue typeParam = new ConnectApi.WrappedValue();
+                typeParam.value = documentType;
+                params.put('Input:TemplateName', typeParam);
+            }
 
             input.inputParams = params;
             input.additionalConfig = new ConnectApi.EinsteinLlmAdditionalConfigInput();
@@ -244,7 +295,10 @@ public with sharing class ContractIntakeController {
             '. Agency: ' + (review.Agency__c == null ? 'Unknown' : review.Agency__c) +
             '. Extraction source: ' + extraction.source +
             '. Extracted JSON: ' + (extraction.jsonText == null ? '' : extraction.jsonText.abbreviate(12000)) +
-            '. Compare clauses to the playbook and taxonomy. Create findings. ' +
+            '. Compare clauses to the playbook and taxonomy. ' +
+            'Return findings in this exact format for each clause:\n' +
+            'Clause Type: <type>\nRisk Level: High|Medium|Low\nExcerpt: "<text>"\n' +
+            'Then end with Overall Risk Score: <0-100>. ' +
             'Do not say you cannot process the file.';
     }
 
