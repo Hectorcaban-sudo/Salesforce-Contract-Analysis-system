@@ -1,6 +1,7 @@
 import { LightningElement, api, wire } from 'lwc';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { getRelatedListRecords } from 'lightning/uiRelatedListApi';
+import { NavigationMixin } from 'lightning/navigation';
 import captureOverride from '@salesforce/apex/CaptureOverrideAction.captureOverrideAura';
 import runAnalysis from '@salesforce/apex/ContractIntakeController.runAnalysis';
 import { refreshApex } from '@salesforce/apex';
@@ -12,7 +13,8 @@ const REVIEW_FIELDS = [
     'Contract_Review__c.Status__c',
     'Contract_Review__c.ContentDocumentId__c',
     'Contract_Review__c.Document_Type__c',
-    'Contract_Review__c.Agency__c'
+    'Contract_Review__c.Agency__c',
+    'Contract_Review__c.Agent_Response__c'
 ];
 
 const FINDING_FIELDS = [
@@ -24,7 +26,7 @@ const FINDING_FIELDS = [
     'Contract_Finding__c.Override_Note__c'
 ];
 
-export default class ContractReviewWorkspace extends LightningElement {
+export default class ContractReviewWorkspace extends NavigationMixin(LightningElement) {
     @api recordId;
     reviewName;
     riskScore;
@@ -32,6 +34,7 @@ export default class ContractReviewWorkspace extends LightningElement {
     contentDocumentId;
     documentType;
     agency;
+    agentResponse;
     findingsResult;
     findings = [];
     selectedFindingId;
@@ -49,13 +52,12 @@ export default class ContractReviewWorkspace extends LightningElement {
             this.contentDocumentId = getFieldValue(data, 'Contract_Review__c.ContentDocumentId__c');
             this.documentType = getFieldValue(data, 'Contract_Review__c.Document_Type__c');
             this.agency = getFieldValue(data, 'Contract_Review__c.Agency__c');
+            this.agentResponse = getFieldValue(data, 'Contract_Review__c.Agent_Response__c');
         }
     }
 
-    get pdfUrl() {
-        return this.contentDocumentId
-            ? `/sfc/servlet.shepherd/document/download/${this.contentDocumentId}#toolbar=1`
-            : null;
+    get hasFile() {
+        return !!this.contentDocumentId;
     }
 
     @wire(getRelatedListRecords, {
@@ -140,6 +142,21 @@ export default class ContractReviewWorkspace extends LightningElement {
         if (found) {
             this.selectFinding(found);
         }
+    }
+
+    handleOpenDocument() {
+        if (!this.contentDocumentId) {
+            return;
+        }
+        this[NavigationMixin.Navigate]({
+            type: 'standard__namedPage',
+            attributes: {
+                pageName: 'filePreview'
+            },
+            state: {
+                selectedRecordId: this.contentDocumentId
+            }
+        });
     }
 
     async handleRerun() {
