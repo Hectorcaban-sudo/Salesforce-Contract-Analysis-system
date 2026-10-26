@@ -1,4 +1,4 @@
-.intake { background: #f3f3f3; min-height: 100%; padding: 1rem; }
+.intake { background: #f3f3f3; min-height: 100%; padding: 1rem; position: relative; }
 .header h1 { margin: 0; font-size: 1.5rem; }
 .subtitle { color: #706e6b; margin: 0.25rem 0 1rem; }
 .body { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
@@ -11,4 +11,23 @@
 .recent li { padding: 0.5rem 0; border-bottom: 1px solid #ecebea; }
 .pill { background: #eef4ff; color: #014486; border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem; }
 .meta { display: block; color: #706e6b; font-size: 0.75rem; }
+.wait-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.wait-card {
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem 2rem 1.25rem;
+    text-align: center;
+    min-width: 280px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.wait-card h2 { margin: 0.75rem 0 0.25rem; font-size: 1.1rem; }
+.wait-card p { margin: 0; color: #706e6b; font-size: 0.85rem; }
 @media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
