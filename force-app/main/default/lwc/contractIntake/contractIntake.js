@@ -40,7 +40,7 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
         try {
             this.draftRecordId = await getOrCreateDraft();
         } catch (error) {
-            this.errorMessage = error.body?.message || 'Could not prepare upload';
+            this.errorMessage = this.formatError(error);
         }
     }
 
@@ -128,7 +128,7 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
                 });
             }
         } catch (error) {
-            this.errorMessage = error.body?.message || error.message || 'Failed to start analysis';
+            this.errorMessage = this.formatError(error);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error',
                 message: this.errorMessage,
@@ -136,6 +136,44 @@ export default class ContractIntake extends NavigationMixin(LightningElement) {
             }));
         } finally {
             this.isRunning = false;
+        }
+    }
+
+    formatError(error) {
+        if (!error) {
+            return 'Failed to start analysis';
+        }
+        const body = error.body;
+        if (body) {
+            if (typeof body.message === 'string' && body.message) {
+                return body.message;
+            }
+            if (Array.isArray(body)) {
+                return body.map((e) => e.message).filter(Boolean).join('; ');
+            }
+            if (body.pageErrors && body.pageErrors.length) {
+                return body.pageErrors.map((e) => e.message).join('; ');
+            }
+            if (body.output && body.output.errors && body.output.errors.length) {
+                return body.output.errors.map((e) => e.message).join('; ');
+            }
+            if (body.fieldErrors) {
+                const msgs = [];
+                Object.keys(body.fieldErrors).forEach((key) => {
+                    body.fieldErrors[key].forEach((e) => msgs.push(key + ': ' + e.message));
+                });
+                if (msgs.length) {
+                    return msgs.join('; ');
+                }
+            }
+        }
+        if (error.message) {
+            return error.message;
+        }
+        try {
+            return JSON.stringify(error);
+        } catch (e) {
+            return 'Failed to start analysis';
         }
     }
 }
